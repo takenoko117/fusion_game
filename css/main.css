@@ -1,0 +1,200 @@
+/**
+ * main.css
+ * 全体レイアウト、ダークSFテーマ、カラーパレット、レスポンシブデザイン
+ */
+
+:root {
+    --bg-dark: #070b12;
+    --bg-panel: #0d1522;
+    --bg-card: #131f33;
+    --bg-card-hover: #1b2a45;
+    --border-color: #1e3352;
+    --border-highlight: #3a86ff;
+
+    --text-primary: #e0e6ed;
+    --text-secondary: #8b9bb4;
+    --text-muted: #5c6b84;
+
+    --c-quark-up: #ff4d6d;
+    --c-quark-down: #4cc9f0;
+    --c-lepton: #ffd166;
+    --c-proton: #ff0055;
+    --c-neutron: #00b4d8;
+    --c-hydrogen: #90e0ef;
+    --c-deuterium: #06d6a0;
+    --c-tritium: #f72585;
+    --c-helium: #7209b7;
+    --c-energy: #ffb703;
+    --c-plasma: #00f5d4;
+
+    --font-mono: "Fira Code", "JetBrains Mono", Consolas, "Courier New", monospace;
+    --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ヘッダー */
+.app-header {
+    background: #090e17;
+    border-bottom: 1px solid var(--border-color);
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.brand-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand-logo {
+    font-size: 24px;
+    filter: drop-shadow(0 0 8px var(--c-plasma));
+}
+
+.brand-title {
+    font-size: 18px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #00f5d4, #3a86ff, #f72585);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 0.5px;
+}
+
+.brand-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* リソース上部バー */
+.resource-bar {
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border-color);
+    padding: 8px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.res-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.res-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.res-item.energy-main {
+    background: rgba(255, 183, 3, 0.1);
+    border-color: rgba(255, 183, 3, 0.4);
+    box-shadow: 0 0 10px rgba(255, 183, 3, 0.15);
+}
+
+.res-icon {
+    font-size: 14px;
+}
+
+.res-val {
+    font-weight: bold;
+    color: #fff;
+}
+
+/* メインゲームグリッド (3カラム構成) */
+.game-container {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 340px 1fr 380px;
+    overflow: hidden;
+    gap: 1px;
+    background-color: var(--border-color);
+}
+
+/* カラム共通スタイル */
+.game-column {
+    background-color: var(--bg-dark);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.column-header {
+    background-color: var(--bg-panel);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.column-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+}
+
+.column-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* スクロールバー装飾 */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+    background: #1e3352;
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #3a86ff;
+}

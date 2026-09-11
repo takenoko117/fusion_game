@@ -1,0 +1,607 @@
+/**
+ * components.css
+ * ボタン、カード、ゲージ、モーダル、施設リストなどのUIパーツ
+ */
+
+/* ボタン汎用 */
+.btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn:hover:not(:disabled) {
+    background: var(--bg-card-hover);
+    border-color: var(--border-highlight);
+    color: #fff;
+    box-shadow: 0 0 8px rgba(58, 134, 255, 0.3);
+}
+
+.btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: rgba(0, 245, 212, 0.15);
+    border-color: var(--c-plasma);
+    color: var(--c-plasma);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--c-plasma);
+    color: #070b12;
+    box-shadow: 0 0 12px rgba(0, 245, 212, 0.5);
+}
+
+.btn-action {
+    background: linear-gradient(135deg, rgba(247, 37, 133, 0.2), rgba(114, 9, 183, 0.2));
+    border-color: var(--c-tritium);
+    color: #fff;
+    font-weight: 700;
+}
+
+.btn-action:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--c-tritium), var(--c-helium));
+    box-shadow: 0 0 15px rgba(247, 37, 133, 0.5);
+}
+
+.btn-small {
+    padding: 3px 8px;
+    font-size: 11px;
+}
+
+/* カードコンポーネント */
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 素粒子射出コントロール */
+.particle-launch-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.particle-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 4px;
+    border-radius: 6px;
+    gap: 4px;
+    font-size: 11px;
+}
+
+.particle-btn.btn-up {
+    border-color: rgba(255, 77, 109, 0.4);
+    color: var(--c-quark-up);
+}
+.particle-btn.btn-up:hover {
+    box-shadow: 0 0 10px rgba(255, 77, 109, 0.4);
+    background: rgba(255, 77, 109, 0.15);
+}
+
+.particle-btn.btn-down {
+    border-color: rgba(76, 201, 240, 0.4);
+    color: var(--c-quark-down);
+}
+.particle-btn.btn-down:hover {
+    box-shadow: 0 0 10px rgba(76, 201, 240, 0.4);
+    background: rgba(76, 201, 240, 0.15);
+}
+
+.particle-btn.btn-electron {
+    border-color: rgba(255, 209, 102, 0.4);
+    color: var(--c-lepton);
+}
+.particle-btn.btn-electron:hover {
+    box-shadow: 0 0 10px rgba(255, 209, 102, 0.4);
+    background: rgba(255, 209, 102, 0.15);
+}
+
+.particle-badge {
+    font-size: 16px;
+    font-weight: 800;
+    font-family: var(--font-mono);
+}
+
+/* キャンバスコンテナ */
+.canvas-wrapper {
+    position: relative;
+    width: 100%;
+    height: 230px;
+    background: #090e17;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.canvas-wrapper canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.canvas-hint {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    font-size: 10px;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+/* レシピリスト・同位体合成 */
+.recipe-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.recipe-row:last-child {
+    border-bottom: none;
+}
+
+.recipe-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.recipe-name {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.recipe-formula {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+}
+
+/* トカマク中央エリア */
+.reactor-viewport {
+    position: relative;
+    width: 100%;
+    height: 380px;
+    background: radial-gradient(circle at center, #0e1a2f 0%, #060a12 85%);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.reactor-viewport canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.reactor-overlay-stats {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.stat-pill {
+    background: rgba(13, 21, 34, 0.85);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.stat-pill .val {
+    font-weight: bold;
+    color: var(--c-plasma);
+}
+
+/* ローソン3重積ゲージ */
+.lawson-gauge-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px 14px;
+}
+
+.progress-track {
+    width: 100%;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 6px 0;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #3a86ff, #00f5d4, #f72585);
+    border-radius: 5px;
+    transition: width 0.3s ease;
+}
+
+.progress-marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #fff;
+    box-shadow: 0 0 6px #fff;
+}
+
+.gauge-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+/* 施設カードリスト */
+.building-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.building-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: border-color 0.2s;
+}
+
+.building-card:hover {
+    border-color: rgba(0, 245, 212, 0.4);
+}
+
+.b-left {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    max-width: 65%;
+}
+
+.b-icon {
+    font-size: 24px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 6px;
+    border-radius: 6px;
+}
+
+.b-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.b-name {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.b-desc {
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.3;
+}
+
+.b-cost {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--c-energy);
+    margin-top: 2px;
+}
+
+.b-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.b-count {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+}
+
+/* タブバー */
+.tabs-header {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 8px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-btn.active {
+    color: var(--c-plasma);
+    border-bottom-color: var(--c-plasma);
+    background: rgba(0, 245, 212, 0.05);
+}
+
+/* ログコンソール */
+.log-console {
+    height: 120px;
+    background: #05080e;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow-y: auto;
+    padding: 6px 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.log-entry {
+    display: flex;
+    gap: 6px;
+}
+.log-time {
+    color: var(--text-muted);
+}
+.log-info { color: #8ecae6; }
+.log-success { color: #06d6a0; }
+.log-fusion { color: #f72585; font-weight: bold; }
+.log-breeding { color: #ffd166; }
+
+/* モーダル */
+.modal-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal-wrapper.active {
+    display: flex;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 8, 14, 0.85);
+    backdrop-filter: blur(6px);
+}
+
+.modal-content {
+    position: relative;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-highlight);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    width: 860px;
+    max-width: 95vw;
+    height: 82vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal-header {
+    background: #090e17;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    font-size: 16px;
+    color: #fff;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+}
+.modal-close-btn:hover {
+    color: #fff;
+}
+
+/* 図鑑モーダル内部レイアウト */
+.codex-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+.codex-sidebar {
+    width: 250px;
+    background: rgba(0, 0, 0, 0.2);
+    border-right: 1px solid var(--border-color);
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.codex-nav-item {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 8px 10px;
+    text-align: left;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transition: all 0.15s;
+}
+
+.codex-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+.codex-nav-item.active {
+    background: rgba(58, 134, 255, 0.15);
+    border-color: var(--border-highlight);
+    color: #fff;
+}
+
+.category-badge {
+    font-size: 9px;
+    color: var(--c-plasma);
+    text-transform: uppercase;
+}
+
+.entry-title {
+    font-weight: 600;
+}
+
+.codex-main {
+    flex: 1;
+    padding: 20px 24px;
+    overflow-y: auto;
+    background: #0b121e;
+    line-height: 1.6;
+}
+
+.codex-entry-header {
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+}
+
+.codex-entry-header h1 {
+    font-size: 20px;
+    color: #fff;
+    margin-top: 4px;
+}
+
+.category-tag {
+    font-size: 11px;
+    background: rgba(0, 245, 212, 0.15);
+    color: var(--c-plasma);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.codex-diagram-container {
+    background: #070b12;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+}
+
+.codex-svg {
+    max-width: 100%;
+    height: 140px;
+}
+
+.codex-markdown {
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.codex-markdown h3 {
+    font-size: 15px;
+    color: var(--c-plasma);
+    margin: 14px 0 8px 0;
+}
+
+.codex-markdown ul {
+    margin-left: 20px;
+    margin-bottom: 12px;
+}
+
+.codex-markdown li {
+    margin-bottom: 4px;
+}
+
+.math-block {
+    background: #04070d;
+    border-left: 3px solid var(--c-tritium);
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-family: var(--font-mono);
+    color: #fff;
+    font-size: 13px;
+    overflow-x: auto;
+}
+
+.math-inline {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    color: #ffd166;
+}

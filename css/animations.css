@@ -1,0 +1,54 @@
+/**
+ * animations.css
+ * アニメーション、発光エフェクト、トランジション
+ */
+
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 5px rgba(0, 245, 212, 0.2); }
+    50% { box-shadow: 0 0 16px rgba(0, 245, 212, 0.6); }
+    100% { box-shadow: 0 0 5px rgba(0, 245, 212, 0.2); }
+}
+
+@keyframes energySurge {
+    0% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.05); filter: brightness(1.4); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+@keyframes rotatingField {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.anim-pulse {
+    animation: pulseGlow 2s infinite ease-in-out;
+}
+
+.anim-surge {
+    animation: energySurge 0.3s ease-out;
+}
+
+.toast-notification {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: rgba(13, 21, 34, 0.95);
+    border: 1px solid var(--c-plasma);
+    box-shadow: 0 0 20px rgba(0, 245, 212, 0.3);
+    border-radius: 6px;
+    padding: 12px 18px;
+    color: #fff;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10000;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toast-notification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
