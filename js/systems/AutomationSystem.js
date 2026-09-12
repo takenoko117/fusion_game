@@ -59,6 +59,14 @@ export class AutomationSystem {
         return (gs * 10) + (cryo * 100) + (float * 1000);
     }
 
+    // 軽水素自動生産レートの取得 (毎秒)
+    getHydrogenProductionRate() {
+        const pem = this.state.buildings['hydrogen_electrolyzer_pem'] || 0;
+        const photo = this.state.buildings['hydrogen_photocatalytic_plant'] || 0;
+        const plasma = this.state.buildings['hydrogen_plasma_pyrolysis'] || 0;
+        return (pem * 20) + (photo * 200) + (plasma * 2000);
+    }
+
     // 毎フレームの自動化処理更新
     update(dt = 1/60) {
         this.accumulatedTime += dt;
@@ -82,6 +90,12 @@ export class AutomationSystem {
         const dRate = this.getDeuteriumProductionRate();
         if (dRate > 0) {
             this.state.deuterium += dRate * dt;
+        }
+
+        // 1d. 軽水素大量生産設備の自動稼働 (PEM純水電解・光触媒・プラズマ熱分解)
+        const hRate = this.getHydrogenProductionRate();
+        if (hRate > 0) {
+            this.state.hydrogen += hRate * dt;
         }
 
         // 2. 自動ハドロン結合炉の稼働

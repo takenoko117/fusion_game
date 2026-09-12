@@ -297,10 +297,25 @@ class GameApp {
         const container = document.getElementById('buildingList');
         if (!container) return;
 
+        const resLabels = {
+            energy: 'MeV',
+            up: 'u',
+            down: 'd',
+            electron: 'e⁻',
+            proton: 'p',
+            neutron: 'n',
+            hydrogen: '¹H',
+            deuterium: 'D',
+            tritium: 'T',
+            helium: '⁴He',
+            fastNeutron: '高速n',
+            lithium6: '⁶Li'
+        };
+
         container.innerHTML = BUILDINGS.map(b => {
             const cost = state.getBuildingCost(b.id);
             const count = state.buildings[b.id] || 0;
-            const costText = Object.entries(cost).map(([k, v]) => `${v} ${k}`).join(', ');
+            const costText = Object.entries(cost).map(([k, v]) => `${v} ${resLabels[k] || k}`).join(', ');
 
             return `
                 <div class="building-card" id="bcard-${b.id}">
@@ -338,9 +353,24 @@ class GameApp {
         const container = document.getElementById('researchList');
         if (!container) return;
 
+        const resLabels = {
+            energy: 'MeV',
+            up: 'u',
+            down: 'd',
+            electron: 'e⁻',
+            proton: 'p',
+            neutron: 'n',
+            hydrogen: '¹H',
+            deuterium: 'D',
+            tritium: 'T',
+            helium: '⁴He',
+            fastNeutron: '高速n',
+            lithium6: '⁶Li'
+        };
+
         container.innerHTML = RESEARCH_TECH.map(t => {
             const unlocked = state.unlockedTechs[t.id];
-            const costText = Object.entries(t.cost).map(([k, v]) => `${v} ${k}`).join(', ');
+            const costText = Object.entries(t.cost).map(([k, v]) => `${v} ${resLabels[k] || k}`).join(', ');
 
             return `
                 <div class="building-card" style="${unlocked ? 'opacity: 0.6; border-color: var(--c-deuterium);' : ''}">
@@ -416,16 +446,29 @@ class GameApp {
         document.getElementById('resElectron').textContent = formatNumber(state.electrons);
         document.getElementById('resProton').textContent = formatNumber(state.protons);
         document.getElementById('resNeutron').textContent = formatNumber(state.neutrons);
+        const resHEl = document.getElementById('resHydrogen');
+        if (resHEl) resHEl.textContent = formatNumber(state.hydrogen);
         document.getElementById('resDeuterium').textContent = formatNumber(state.deuterium);
         document.getElementById('resTritium').textContent = formatNumber(state.tritium);
         document.getElementById('resHelium').textContent = formatNumber(state.helium);
         document.getElementById('resFastNeutron').textContent = formatNumber(state.fastNeutrons);
         document.getElementById('resLithium6').textContent = formatNumber(state.lithium6);
 
+        // 軽水素生産レート表示
+        const hRate = this.automationSystem.getHydrogenProductionRate();
+        const hRateEl = document.getElementById('txtHydrogenRate');
+        const resHRateEl = document.getElementById('resHydrogenRate');
+        if (hRateEl) {
+            hRateEl.textContent = hRate > 0 ? `(+${formatNumber(hRate, 1)} /秒)` : '(+0 /秒)';
+        }
+        if (resHRateEl) {
+            resHRateEl.textContent = hRate > 0 ? `(+${formatNumber(hRate, 0)}/s)` : '';
+        }
+
         // リチウム生産レート表示
+        const liRate = this.automationSystem.getLithiumProductionRate();
         const liRateEl = document.getElementById('txtLithiumRate');
         if (liRateEl) {
-            const liRate = this.automationSystem.getLithiumProductionRate();
             liRateEl.textContent = liRate > 0 ? `(+${formatNumber(liRate, 1)} /秒)` : '(+0 /秒)';
         }
 

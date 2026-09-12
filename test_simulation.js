@@ -152,7 +152,7 @@ console.log('--- 9. 海水重水素大量生産設備 テスト ---');
 assert(autoSys.getDeuteriumProductionRate() === 0, '初期重水素生産レートは0');
 
 state.energy = 500000;
-state.hydrogen = 100;
+state.hydrogen = 300;
 state.helium = 200;
 
 // GSプラント購入 (10 D/sec)
@@ -176,5 +176,35 @@ const prevD = state.deuterium;
 autoSys.update(1.0);
 assert(Math.round(state.deuterium - prevD) === expectedDRate, '海水重水素自動大量生産確認');
 
-console.log('\n🎉 ALL TESTS PASSED SUCCESSFULLY! ゲームロジック・拡大再生産サイクル・リチウム/重水素大量生産は完全に正常です。');
+console.log('--- 10. 軽水素(¹H)大量生産設備 テスト ---');
+assert(autoSys.getHydrogenProductionRate() === 0, '初期水素生産レートは0');
+
+state.energy = 500000;
+state.electrons = 100;
+state.helium = 200;
+
+// PEM純水電解ユニット購入 (20 H/sec)
+const bPEM = autoSys.buyBuilding('hydrogen_electrolyzer_pem');
+assert(bPEM === true, 'PEM式 純水電解セルユニット建設成功');
+
+// 光触媒コンプレックス購入 (200 H/sec)
+const bPhoto = autoSys.buyBuilding('hydrogen_photocatalytic_plant');
+assert(bPhoto === true, '高温水蒸気電解・光触媒コンプレックス建設成功');
+
+// 熱プラズマ分解タワー購入 (2000 H/sec)
+const bPlasma = autoSys.buyBuilding('hydrogen_plasma_pyrolysis');
+assert(bPlasma === true, '超高温水蒸気熱プラズマ分解タワー建設成功');
+
+const expectedHRate = 20 + 200 + 2000; // 2220 H/sec
+const actualHRate = autoSys.getHydrogenProductionRate();
+assert(actualHRate === expectedHRate, `軽水素自動生産レート正常確認 (${actualHRate} H/秒)`);
+
+// 1秒間の自動生産
+const prevH = state.hydrogen;
+autoSys.update(1.0);
+assert(Math.round(state.hydrogen - prevH) === expectedHRate, '軽水素自動大量生産確認');
+assert(state.achievements['ach_first_hydrogen'] === true, '実績「水素原子の精製」達成確認');
+
+console.log('\n🎉 ALL TESTS PASSED SUCCESSFULLY! ゲームロジック・拡大再生産サイクル・水素/重水素/リチウム大量生産は完全に正常です。');
+
 

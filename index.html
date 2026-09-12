@@ -68,8 +68,13 @@
             </div>
         </div>
 
-        <!-- 水素同位体 (燃料) -->
+        <!-- 水素同位体 (原料・燃料) -->
         <div class="res-group">
+            <div class="res-item" title="軽水素 (¹H = 1p + 1e⁻) - 純水電解・光触媒・熱プラズマ分解プラントから自動供給可能">
+                <span style="color: var(--c-hydrogen); font-weight: bold;">軽水素 ¹H:</span>
+                <span class="res-val" id="resHydrogen">0</span>
+                <span id="resHydrogenRate" style="font-size: 10px; color: var(--c-hydrogen); font-family: var(--font-mono); margin-left: 2px;"></span>
+            </div>
             <div class="res-item" title="重水素 (²H / D = 1p + 1n + 1e⁻) - 海水抽出設備から自動供給可能">
                 <span style="color: var(--c-deuterium); font-weight: bold;">重水素 ²H(D):</span>
                 <span class="res-val" id="resDeuterium">0</span>
@@ -170,8 +175,10 @@
                     </div>
                     <div class="recipe-row">
                         <div class="recipe-info">
-                            <span class="recipe-name" style="color: var(--c-hydrogen);">軽水素 (¹H)</span>
-                            <span class="recipe-formula">1p + 1e⁻</span>
+                            <span class="recipe-name" style="color: var(--c-hydrogen);">
+                                軽水素 (¹H) <span id="txtHydrogenRate" style="font-size: 10px; color: var(--c-hydrogen); font-family: var(--font-mono); font-weight: normal;">(+0.0 /秒)</span>
+                            </span>
+                            <span class="recipe-formula">1p + 1e⁻ (水電解・プラズマ分解で自動生産可)</span>
                         </div>
                         <button class="btn btn-small" id="btnCraftHydrogen">結合</button>
                     </div>

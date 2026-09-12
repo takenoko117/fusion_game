@@ -244,6 +244,36 @@ export const BUILDINGS = [
         icon: '🚀',
     },
     {
+        id: 'hydrogen_electrolyzer_pem',
+        name: 'PEM式 純水電解セルユニット',
+        desc: '固体高分子電解質膜(PEM)により純水を高効率電気分解。クォークや核子の合成を介さず、軽水素(¹H)を毎秒20個自動精製します。',
+        category: 'fuel',
+        cost: { energy: 200, electron: 4 },
+        costMultiplier: 1.15,
+        hydrogenRate: 20, // 毎秒20 H
+        icon: '⚗️',
+    },
+    {
+        id: 'hydrogen_photocatalytic_plant',
+        name: '高温水蒸気電解・光触媒コンプレックス',
+        desc: 'トカマク炉の排熱エネルギーと多接合光触媒ナノ構造を併用し、水蒸気を超高効率熱化学分解。軽水素(¹H)を毎秒200個大量精製します。',
+        category: 'fuel',
+        cost: { energy: 2500, helium: 3 },
+        costMultiplier: 1.22,
+        hydrogenRate: 200, // 毎秒200 H
+        icon: '🏭',
+    },
+    {
+        id: 'hydrogen_plasma_pyrolysis',
+        name: '超高温水蒸気熱プラズマ分解タワー',
+        desc: '高周波マイクロ波プラズマトーチにより水蒸気を瞬時に原子解離。毎秒2,000個の軽水素(¹H)を爆発的に連続供給します！',
+        category: 'fuel',
+        cost: { energy: 25000, helium: 25 },
+        costMultiplier: 1.30,
+        hydrogenRate: 2000, // 毎秒2000 H
+        icon: '⚡',
+    },
+    {
         id: 'deuterium_extractor_gs',
         name: 'ギルドラー・サルファイド式 海水重水電解プラント',
         desc: '海水中(約7,000個に1個の割合)に含まれる重水(D₂O)を硫化水素-水二温度同位体交換法と電解で抽出。重水素(²H/D)を毎秒10個自動供給します。',
@@ -258,7 +288,7 @@ export const BUILDINGS = [
         name: '極低温液体水素 精密蒸留コンプレックス',
         desc: '海水を電気分解して得た水素ガスを極低温(20K)で液化・精密蒸留。沸点差を利用して高純度重水素(D₂)を毎秒100個大量精製します。',
         category: 'fuel',
-        cost: { energy: 6000, helium: 8 },
+        cost: { energy: 6000, hydrogen: 50, helium: 8 },
         costMultiplier: 1.25,
         deuteriumRate: 100, // 毎秒100 D
         icon: '🏭',
@@ -268,7 +298,7 @@ export const BUILDINGS = [
         name: '海洋直接触媒抽出メガフロート群',
         desc: '巨大洋上プラントが海洋深層水を取り込み、ナノ多孔質グラフェン触媒膜で重水素を直接分離。毎秒1,000個の重水素を爆発的大量生産します！',
         category: 'fuel',
-        cost: { energy: 65000, helium: 70 },
+        cost: { energy: 65000, hydrogen: 200, helium: 70 },
         costMultiplier: 1.35,
         deuteriumRate: 1000, // 毎秒1000 D
         icon: '🌊',
@@ -434,6 +464,12 @@ export const ACHIEVEMENTS = [
         title: '素粒子の邂逅',
         desc: '初めて陽子または中性子を合成した。',
         condition: (s) => (s.protons > 0 || s.neutrons > 0),
+    },
+    {
+        id: 'ach_first_hydrogen',
+        title: '水素原子の精製',
+        desc: '初めて軽水素(¹H)を合成または抽出した。',
+        condition: (s) => (s.hydrogen > 0),
     },
     {
         id: 'ach_first_deuterium',
