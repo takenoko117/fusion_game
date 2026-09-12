@@ -295,12 +295,20 @@
                 <!-- タブ1: 施設一覧 -->
                 <div id="tabBuildingsContent">
                     <!-- リチウム補充クイックバー -->
-                    <div class="card" style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <div style="font-size: 12px; font-weight: 700; color: var(--c-plasma);">リチウム-6 増殖燃料備蓄</div>
-                            <div style="font-size: 10px; color: var(--text-muted);">増殖ブランケットの中性子捕獲に必要</div>
+                    <div class="card" style="margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <div>
+                                <div style="font-size: 12px; font-weight: 700; color: var(--c-plasma);">
+                                    リチウム-6 増殖燃料備蓄: <span id="txtLithiumRate" style="font-size: 11px; color: var(--c-deuterium); font-family: var(--font-mono);">(+0.0 /秒)</span>
+                                </div>
+                                <div style="font-size: 10px; color: var(--text-muted);">増殖ブランケットの燃料。自動生産設備で毎秒補給！</div>
+                            </div>
                         </div>
-                        <button class="btn btn-small" id="btnBuyLithium">備蓄補充 (+20 Li, 100 MeV)</button>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn btn-small" style="flex: 1;" id="btnBuyLithium20">+20 Li (100 MeV)</button>
+                            <button class="btn btn-small" style="flex: 1;" id="btnBuyLithium100">+100 Li (500 MeV)</button>
+                            <button class="btn btn-small" style="flex: 1;" id="btnBuyLithium1000">+1,000 Li (5,000 MeV)</button>
+                        </div>
                     </div>
 
                     <!-- 施設カード群 -->

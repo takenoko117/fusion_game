@@ -213,6 +213,36 @@ export const BUILDINGS = [
         efficiencyBoost: 0.25, // 発電効率UP
         icon: '🌀',
     },
+    {
+        id: 'lithium_extractor',
+        name: '海水リチウム吸着電解プラント',
+        desc: '海水中から透析膜と選択吸着電極でリチウムを常時回収。リチウム-6を毎秒5個自動供給し、ブランケットの燃料切れを防ぎます。',
+        category: 'breeding',
+        cost: { energy: 400, hydrogen: 10 },
+        costMultiplier: 1.18,
+        lithiumRate: 5, // 毎秒5 Li
+        icon: '🌊',
+    },
+    {
+        id: 'lithium_enricher',
+        name: 'リチウム-6 レーザー同位体濃縮カスケード',
+        desc: '天然リチウムから原子蒸気レーザー同位体分離(AVLIS)によって高純度⁶Liを高精度濃縮。毎秒50個を大量供給します。',
+        category: 'breeding',
+        cost: { energy: 4000, helium: 5 },
+        costMultiplier: 1.25,
+        lithiumRate: 50, // 毎秒50 Li
+        icon: '🔬',
+    },
+    {
+        id: 'orbital_lithium_harvester',
+        name: '小惑星帯リチウム採掘ドローン船団',
+        desc: '小惑星帯(アステロイドベルト)の豊富な鉱床からリチウムを高出力マスドライバーで地球軌道へ直送。毎秒500個を爆発的大量供給します！',
+        category: 'breeding',
+        cost: { energy: 45000, helium: 50 },
+        costMultiplier: 1.35,
+        lithiumRate: 500, // 毎秒500 Li
+        icon: '🚀',
+    },
 ];
 
 // 研究開発・テクノロジーアップグレード

@@ -43,6 +43,14 @@ export class AutomationSystem {
         return false;
     }
 
+    // リチウム自動生産レートの取得 (毎秒)
+    getLithiumProductionRate() {
+        const extractors = this.state.buildings['lithium_extractor'] || 0;
+        const enrichers = this.state.buildings['lithium_enricher'] || 0;
+        const harvesters = this.state.buildings['orbital_lithium_harvester'] || 0;
+        return (extractors * 5) + (enrichers * 50) + (harvesters * 500);
+    }
+
     // 毎フレームの自動化処理更新
     update(dt = 1/60) {
         this.accumulatedTime += dt;
@@ -55,6 +63,12 @@ export class AutomationSystem {
         if (uCount > 0) this.state.upQuarks += uCount * dt;
         if (dCount > 0) this.state.downQuarks += dCount * dt;
         if (eCount > 0) this.state.electrons += eCount * dt;
+
+        // 1b. リチウム大量生産設備の自動稼働 (海水抽出・濃縮・小惑星採掘)
+        const liRate = this.getLithiumProductionRate();
+        if (liRate > 0) {
+            this.state.lithium6 += liRate * dt;
+        }
 
         // 2. 自動ハドロン結合炉の稼働
         const hadronizers = this.state.buildings['auto_hadronizer'] || 0;

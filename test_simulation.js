@@ -115,4 +115,37 @@ const researched = upgradeSys.research('res_gluon_confinement');
 assert(researched === true, 'グルーオン弦張力制御の研究完了');
 assert(state.unlockedTechs['res_gluon_confinement'] === true, '研究フラグON確認');
 
-console.log('\n🎉 ALL TESTS PASSED SUCCESSFULLY! ゲームロジック・拡大再生産サイクル・物理計算は完全に正常です。');
+console.log('--- 8. リチウム大量生産設備 & 一括補充 テスト ---');
+state.energy = 200000;
+state.hydrogen = 50;
+state.helium = 100;
+
+// 海水抽出プラント建設
+const bExt = autoSys.buyBuilding('lithium_extractor');
+assert(bExt === true, '海水リチウム吸着電解プラント建設成功');
+
+// レーザー濃縮カスケード建設
+const bEnr = autoSys.buyBuilding('lithium_enricher');
+assert(bEnr === true, 'リチウム-6 レーザー同位体濃縮カスケード建設成功');
+
+// 小惑星採掘船団建設
+const bHarv = autoSys.buyBuilding('orbital_lithium_harvester');
+assert(bHarv === true, '小惑星帯リチウム採掘ドローン船団建設成功');
+
+const expectedRate = 5 + 50 + 500; // 555 Li / sec
+const actualRate = autoSys.getLithiumProductionRate();
+assert(actualRate === expectedRate, `リチウム自動生産レート正常確認 (${actualRate} Li/秒)`);
+
+// 1秒間の自動生産 (中性子消費のない純生産を検証)
+state.fastNeutrons = 0;
+const prevLi = state.lithium6;
+autoSys.update(1.0);
+assert(Math.round(state.lithium6 - prevLi) === expectedRate, 'リチウム自動大量生産確認');
+
+// 一括補充テスト
+const bLi100 = autoSys.buyLithium(100);
+assert(bLi100 === true, 'リチウム-6 一括補充 (+100 Li) 成功');
+const bLi1000 = autoSys.buyLithium(1000);
+assert(bLi1000 === true, 'リチウム-6 一括補充 (+1,000 Li) 成功');
+
+console.log('\n🎉 ALL TESTS PASSED SUCCESSFULLY! ゲームロジック・拡大再生産サイクル・リチウム大量生産は完全に正常です。');

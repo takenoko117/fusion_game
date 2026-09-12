@@ -184,14 +184,22 @@ class GameApp {
             }
         });
 
-        // リチウム-6 備蓄補充
-        document.getElementById('btnBuyLithium').addEventListener('click', () => {
-            if (this.automationSystem.buyLithium(20)) {
-                this.logView.add(`リチウム-6備蓄を20個補充しました (100 MeV消費)。`, 'breeding');
+        // リチウム-6 備蓄補充 (一括購入対応)
+        const buyLi = (amt, cost) => {
+            if (this.automationSystem.buyLithium(amt)) {
+                this.logView.add(`リチウム-6備蓄を ${amt} 個補充しました (${cost} MeV消費)。`, 'breeding');
             } else {
-                this.logView.add(`エネルギーが不足しています (必要: 100 MeV)。`, 'info');
+                this.logView.add(`エネルギーが不足しています (必要: ${cost} MeV)。`, 'info');
             }
-        });
+        };
+
+        const b20 = document.getElementById('btnBuyLithium20');
+        const b100 = document.getElementById('btnBuyLithium100');
+        const b1000 = document.getElementById('btnBuyLithium1000');
+
+        if (b20) b20.addEventListener('click', () => buyLi(20, 100));
+        if (b100) b100.addEventListener('click', () => buyLi(100, 500));
+        if (b1000) b1000.addEventListener('click', () => buyLi(1000, 5000));
 
         // --- タブ切り替え ---
         const tabB = document.getElementById('tabBuildingsBtn');
@@ -413,6 +421,13 @@ class GameApp {
         document.getElementById('resHelium').textContent = formatNumber(state.helium);
         document.getElementById('resFastNeutron').textContent = formatNumber(state.fastNeutrons);
         document.getElementById('resLithium6').textContent = formatNumber(state.lithium6);
+
+        // リチウム生産レート表示
+        const liRateEl = document.getElementById('txtLithiumRate');
+        if (liRateEl) {
+            const liRate = this.automationSystem.getLithiumProductionRate();
+            liRateEl.textContent = liRate > 0 ? `(+${formatNumber(liRate, 1)} /秒)` : '(+0 /秒)';
+        }
 
         // トカマクHUD
         const r = state.reactor;
