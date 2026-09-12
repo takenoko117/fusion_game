@@ -148,4 +148,33 @@ assert(bLi100 === true, 'リチウム-6 一括補充 (+100 Li) 成功');
 const bLi1000 = autoSys.buyLithium(1000);
 assert(bLi1000 === true, 'リチウム-6 一括補充 (+1,000 Li) 成功');
 
-console.log('\n🎉 ALL TESTS PASSED SUCCESSFULLY! ゲームロジック・拡大再生産サイクル・リチウム大量生産は完全に正常です。');
+console.log('--- 9. 海水重水素大量生産設備 テスト ---');
+assert(autoSys.getDeuteriumProductionRate() === 0, '初期重水素生産レートは0');
+
+state.energy = 500000;
+state.hydrogen = 100;
+state.helium = 200;
+
+// GSプラント購入 (10 D/sec)
+const bGS = autoSys.buyBuilding('deuterium_extractor_gs');
+assert(bGS === true, 'GS海水重水電解プラント建設成功');
+
+// 極低温蒸留コンプレックス購入 (100 D/sec)
+const bCryo = autoSys.buyBuilding('deuterium_distillery_cryo');
+assert(bCryo === true, '極低温液体水素精密蒸留コンプレックス建設成功');
+
+// 海洋メガフロート購入 (1000 D/sec)
+const bFloat = autoSys.buyBuilding('deuterium_megafloat');
+assert(bFloat === true, '海洋直接触媒抽出メガフロート群建設成功');
+
+const expectedDRate = 10 + 100 + 1000; // 1110 D/sec
+const actualDRate = autoSys.getDeuteriumProductionRate();
+assert(actualDRate === expectedDRate, `重水素自動生産レート正常確認 (${actualDRate} D/秒)`);
+
+// 1秒間の自動生産
+const prevD = state.deuterium;
+autoSys.update(1.0);
+assert(Math.round(state.deuterium - prevD) === expectedDRate, '海水重水素自動大量生産確認');
+
+console.log('\n🎉 ALL TESTS PASSED SUCCESSFULLY! ゲームロジック・拡大再生産サイクル・リチウム/重水素大量生産は完全に正常です。');
+

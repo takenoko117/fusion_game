@@ -243,6 +243,36 @@ export const BUILDINGS = [
         lithiumRate: 500, // 毎秒500 Li
         icon: '🚀',
     },
+    {
+        id: 'deuterium_extractor_gs',
+        name: 'ギルドラー・サルファイド式 海水重水電解プラント',
+        desc: '海水中(約7,000個に1個の割合)に含まれる重水(D₂O)を硫化水素-水二温度同位体交換法と電解で抽出。重水素(²H/D)を毎秒10個自動供給します。',
+        category: 'fuel',
+        cost: { energy: 600, hydrogen: 15 },
+        costMultiplier: 1.18,
+        deuteriumRate: 10, // 毎秒10 D
+        icon: '💧',
+    },
+    {
+        id: 'deuterium_distillery_cryo',
+        name: '極低温液体水素 精密蒸留コンプレックス',
+        desc: '海水を電気分解して得た水素ガスを極低温(20K)で液化・精密蒸留。沸点差を利用して高純度重水素(D₂)を毎秒100個大量精製します。',
+        category: 'fuel',
+        cost: { energy: 6000, helium: 8 },
+        costMultiplier: 1.25,
+        deuteriumRate: 100, // 毎秒100 D
+        icon: '🏭',
+    },
+    {
+        id: 'deuterium_megafloat',
+        name: '海洋直接触媒抽出メガフロート群',
+        desc: '巨大洋上プラントが海洋深層水を取り込み、ナノ多孔質グラフェン触媒膜で重水素を直接分離。毎秒1,000個の重水素を爆発的大量生産します！',
+        category: 'fuel',
+        cost: { energy: 65000, helium: 70 },
+        costMultiplier: 1.35,
+        deuteriumRate: 1000, // 毎秒1000 D
+        icon: '🌊',
+    },
 ];
 
 // 研究開発・テクノロジーアップグレード

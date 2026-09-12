@@ -51,6 +51,14 @@ export class AutomationSystem {
         return (extractors * 5) + (enrichers * 50) + (harvesters * 500);
     }
 
+    // 海水重水素自動生産レートの取得 (毎秒)
+    getDeuteriumProductionRate() {
+        const gs = this.state.buildings['deuterium_extractor_gs'] || 0;
+        const cryo = this.state.buildings['deuterium_distillery_cryo'] || 0;
+        const float = this.state.buildings['deuterium_megafloat'] || 0;
+        return (gs * 10) + (cryo * 100) + (float * 1000);
+    }
+
     // 毎フレームの自動化処理更新
     update(dt = 1/60) {
         this.accumulatedTime += dt;
@@ -68,6 +76,12 @@ export class AutomationSystem {
         const liRate = this.getLithiumProductionRate();
         if (liRate > 0) {
             this.state.lithium6 += liRate * dt;
+        }
+
+        // 1c. 海水重水素大量生産設備の自動稼働 (GS重水電解・極低温蒸留・メガフロート)
+        const dRate = this.getDeuteriumProductionRate();
+        if (dRate > 0) {
+            this.state.deuterium += dRate * dt;
         }
 
         // 2. 自動ハドロン結合炉の稼働

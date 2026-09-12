@@ -70,9 +70,10 @@
 
         <!-- 水素同位体 (燃料) -->
         <div class="res-group">
-            <div class="res-item" title="重水素 (²H / D = 1p + 1n + 1e⁻)">
+            <div class="res-item" title="重水素 (²H / D = 1p + 1n + 1e⁻) - 海水抽出設備から自動供給可能">
                 <span style="color: var(--c-deuterium); font-weight: bold;">重水素 ²H(D):</span>
                 <span class="res-val" id="resDeuterium">0</span>
+                <span id="resDeuteriumRate" style="font-size: 10px; color: var(--c-deuterium); font-family: var(--font-mono); margin-left: 2px;"></span>
             </div>
             <div class="res-item" title="三重水素 (³H / T = 1p + 2n + 1e⁻)">
                 <span style="color: var(--c-tritium); font-weight: bold;">三重水素 ³H(T):</span>
@@ -176,8 +177,10 @@
                     </div>
                     <div class="recipe-row">
                         <div class="recipe-info">
-                            <span class="recipe-name" style="color: var(--c-deuterium);">重水素 (²H / D)</span>
-                            <span class="recipe-formula">1p + 1n + 1e⁻ (核融合の基本燃料)</span>
+                            <span class="recipe-name" style="color: var(--c-deuterium);">
+                                重水素 (²H / D) <span id="txtDeuteriumRate" style="font-size: 10px; color: var(--c-deuterium); font-family: var(--font-mono); font-weight: normal;">(+0.0 /秒)</span>
+                            </span>
+                            <span class="recipe-formula">1p + 1n + 1e⁻ (海水から自動抽出可)</span>
                         </div>
                         <button class="btn btn-small" id="btnCraftDeuterium">結合</button>
                     </div>

@@ -429,6 +429,17 @@ class GameApp {
             liRateEl.textContent = liRate > 0 ? `(+${formatNumber(liRate, 1)} /秒)` : '(+0 /秒)';
         }
 
+        // 重水素生産レート表示
+        const dRate = this.automationSystem.getDeuteriumProductionRate();
+        const dRateEl = document.getElementById('txtDeuteriumRate');
+        const resDRateEl = document.getElementById('resDeuteriumRate');
+        if (dRateEl) {
+            dRateEl.textContent = dRate > 0 ? `(+${formatNumber(dRate, 1)} /秒)` : '(+0 /秒)';
+        }
+        if (resDRateEl) {
+            resDRateEl.textContent = dRate > 0 ? `(+${formatNumber(dRate, 0)}/s)` : '';
+        }
+
         // トカマクHUD
         const r = state.reactor;
         const tempMillionC = (r.temperatureKeV * 11.6).toFixed(0);
