@@ -13,6 +13,7 @@ import { FusionSystem } from './systems/FusionSystem.js';
 import { AutomationSystem } from './systems/AutomationSystem.js';
 import { UpgradeSystem } from './systems/UpgradeSystem.js';
 import { CodexModal } from './ui/CodexModal.js';
+import { GuideModal } from './ui/GuideModal.js';
 import { LogView } from './ui/LogView.js';
 
 class GameApp {
@@ -26,6 +27,7 @@ class GameApp {
         this.upgradeSystem = null;
 
         this.codexModal = null;
+        this.guideModal = null;
         this.logView = null;
 
         this.lastTime = performance.now();
@@ -66,6 +68,9 @@ class GameApp {
 
         const codexEl = document.getElementById('codexModal');
         this.codexModal = new CodexModal(codexEl);
+
+        const guideEl = document.getElementById('guideModal');
+        this.guideModal = new GuideModal(guideEl);
 
         // 4. 保存データのロード
         if (state.load()) {
@@ -242,6 +247,18 @@ class GameApp {
                 location.reload();
             }
         });
+
+        // 攻略手順書モーダルオープン
+        document.getElementById('guideBtn').addEventListener('click', () => {
+            this.guideModal.open();
+        });
+
+        const linkReactorGuide = document.getElementById('linkOpenGuideFromReactor');
+        if (linkReactorGuide) {
+            linkReactorGuide.addEventListener('click', () => {
+                this.guideModal.open('q_factor_mechanics');
+            });
+        }
 
         // 図鑑モーダルオープン
         document.getElementById('codexBtn').addEventListener('click', () => {

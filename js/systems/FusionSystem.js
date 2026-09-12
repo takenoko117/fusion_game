@@ -101,7 +101,14 @@ export class FusionSystem {
         r.density = 0.2 + (b['pellet_injector'] || 0) * 0.5;
 
         // 外部加熱パワー (MW)
-        r.heatingPowerMW = 1.0 + (b['nbi_heater'] || 0) * 5.0;
+        let heatMW = 1.0 + (b['nbi_heater'] || 0) * 5.0;
+
+        // 研究ボーナス: 自己加熱燃焼プラズマ自律制御 (外部加熱入力を削減してQ値を跳ね上げる)
+        if (this.state.unlockedTechs['res_burning_plasma']) {
+            heatMW *= 0.4;
+        }
+
+        r.heatingPowerMW = heatMW;
     }
 
     // 核融合反応処理
@@ -119,6 +126,9 @@ export class FusionSystem {
         // 研究ボーナス
         if (this.state.unlockedTechs['res_quantum_tunneling']) {
             reactionRate *= 1.5;
+        }
+        if (this.state.unlockedTechs['res_stellarator_helix']) {
+            reactionRate *= 1.3;
         }
 
         let totalEnergyProducedInStep = 0;
@@ -154,7 +164,10 @@ export class FusionSystem {
                 this.state.fastNeutrons += count;
 
                 // アルファ粒子(3.5 MeV)による自己加熱: プラズマ温度の上昇
-                const alphaHeating = count * 3.5;
+                let alphaHeating = count * 3.5;
+                if (this.state.unlockedTechs['res_burning_plasma']) {
+                    alphaHeating *= 1.5; // アルファ線エネルギー閉じ込め向上
+                }
                 r.temperatureKeV += (alphaHeating / (r.density * 40 + 10)) * 0.08;
 
                 // 炉壁ダイバータ発電ボーナス
@@ -193,7 +206,10 @@ export class FusionSystem {
                 this.state.helium += count;
                 this.state.fastNeutrons += count * 2; // 中性子は2個放出
 
-                const alphaHeating = count * 2.5;
+                let alphaHeating = count * 2.5;
+                if (this.state.unlockedTechs['res_burning_plasma']) {
+                    alphaHeating *= 1.5;
+                }
                 r.temperatureKeV += (alphaHeating / (r.density * 40 + 10)) * 0.06;
 
                 const divertorBonus = 1 + (this.state.buildings['advanced_divertor'] || 0) * 0.25;
@@ -206,8 +222,9 @@ export class FusionSystem {
         // 3. 発熱出力とQ値の計算
         const totalFusions = dtFusions + ttFusions;
         if (totalFusions > 0) {
-            // MW換算 (簡易スケール)
-            r.fusionPowerMW = (totalEnergyProducedInStep / dt) * PHYSICS.MEV_TO_JOULE * 1e-6 * 1000;
+            // MW換算 (指数移動平均で滑らかに表示)
+            const instantPower = (totalEnergyProducedInStep / dt) * PHYSICS.MEV_TO_JOULE * 1e-6 * 1000;
+            r.fusionPowerMW = r.fusionPowerMW > 0 ? (r.fusionPowerMW * 0.75 + instantPower * 0.25) : instantPower;
             r.qValue = r.heatingPowerMW > 0 ? (r.fusionPowerMW / r.heatingPowerMW) : 0;
             if (r.qValue > this.state.stats.maxQ) {
                 this.state.stats.maxQ = r.qValue;
@@ -220,6 +237,14 @@ export class FusionSystem {
             sound.playFusionBoom(1.0 + Math.min(r.qValue * 0.2, 2.0));
             this.state.notify();
             return true;
+        } else {
+            // 反応がないフレームは減衰
+            r.fusionPowerMW *= 0.92;
+            r.qValue = r.heatingPowerMW > 0 ? (r.fusionPowerMW / r.heatingPowerMW) : 0;
+            if (r.fusionPowerMW < 0.01) {
+                r.fusionPowerMW = 0;
+                r.qValue = 0;
+            }
         }
 
         return false;

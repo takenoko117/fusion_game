@@ -23,6 +23,7 @@
             <button class="btn btn-small" id="speedBtn" title="ゲーム速度変更">速度: <span id="speedVal">1x</span></button>
             <button class="btn btn-small" id="pauseBtn" title="一時停止">⏸️</button>
             <button class="btn btn-small" id="soundBtn" title="音声切替">🔊 音声: ON</button>
+            <button class="btn btn-small btn-action" id="guideBtn">📖 攻略手順書</button>
             <button class="btn btn-small btn-primary" id="codexBtn">📚 核融合図鑑 (Codex)</button>
             <button class="btn btn-small" id="achievementsBtn">🏆 実績</button>
             <button class="btn btn-small" id="saveBtn" title="セーブ">💾 保存</button>
@@ -264,8 +265,9 @@
                             ⚡ 磁気パルス圧縮点火 (IGNITE FUSION)
                         </button>
                     </div>
-                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px; text-align: center;">
-                        D-T反応: ²H + ³H → ⁴He (3.5 MeV) + n (14.1 MeV) + 17.6 MeV
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 10px; color: var(--text-muted);">
+                        <span>D-T反応: ²H + ³H → ⁴He (3.5 MeV) + n (14.1 MeV) + 17.6 MeV</span>
+                        <a href="javascript:void(0)" id="linkOpenGuideFromReactor" style="color: var(--c-plasma); font-weight: bold; text-decoration: underline; cursor: pointer;">📖 Q値向上の攻略手順</a>
                     </div>
                 </div>
 
@@ -335,6 +337,11 @@
         </section>
 
     </main>
+
+    <!-- モーダル: 攻略手順書 (Guide) -->
+    <div class="modal-wrapper" id="guideModal">
+        <!-- JS側で GuideModal が動的初期化 -->
+    </div>
 
     <!-- モーダル: 核融合図鑑 (Codex) -->
     <div class="modal-wrapper" id="codexModal">
