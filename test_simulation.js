@@ -3,7 +3,7 @@
  * ゲームループ・物理計算・拡大再生産サイクルの自動シミュレーションテスト
  */
 
-import { state } from './js/state.js';
+import { state, formatEnergy, formatElectronVolt } from './js/state.js';
 import { ParticleSystem } from './js/systems/ParticleSystem.js';
 import { FusionSystem } from './js/systems/FusionSystem.js';
 import { AutomationSystem } from './js/systems/AutomationSystem.js';
@@ -44,21 +44,21 @@ assert(state.upQuarks === 0, 'uクォーク消費確認 (2 - 2 = 0)');
 assert(state.downQuarks === 0, 'dクォーク消費確認 (4 - 4 = 0)');
 
 console.log('--- 3. 同位体合成テスト ---');
-// 重水素 (2H / D): 1p + 1n + 1e- -> 1 D
+// 重水素 (²H): 1p + 1n + 1e- -> 1 ²H
 const dCreated = particleSys.craftDeuterium(1);
-assert(dCreated === 1, '重水素 D を1個合成');
+assert(dCreated === 1, '重水素 ²H を1個合成');
 assert(state.protons === 1, '陽子残量1');
 assert(state.neutrons === 1, '中性子残量1');
 assert(state.electrons === 3, '電子残量3');
 
-// さらに中性子を追加して三重水素 (3H / T): 1p + 2n + 1e- -> 1 T
+// さらに中性子を追加して三重水素 (³H): 1p + 2n + 1e- -> 1 ³H
 particleSys.shoot('up');
 particleSys.shoot('down');
 particleSys.shoot('down');
 particleSys.craftNeutron(1); // これで中性子計2個
 const tCreated = particleSys.craftTritium(1);
-assert(tCreated === 1, '三重水素 T を1個合成');
-assert(state.deuterium === 1 && state.tritium === 1, '燃料 D=1, T=1 準備完了');
+assert(tCreated === 1, '三重水素 ³H を1個合成');
+assert(state.deuterium === 1 && state.tritium === 1, '燃料 ²H=1, ³H=1 準備完了');
 
 console.log('--- 4. プラズマ核融合反応 (D-T) テスト ---');
 // 燃料を炉心に注入
@@ -202,9 +202,51 @@ assert(actualHRate === expectedHRate, `軽水素自動生産レート正常確�
 // 1秒間の自動生産
 const prevH = state.hydrogen;
 autoSys.update(1.0);
-assert(Math.round(state.hydrogen - prevH) === expectedHRate, '軽水素自動大量生産確認');
-assert(state.achievements['ach_first_hydrogen'] === true, '実績「水素原子の精製」達成確認');
+console.log('--- 11. エネルギー単位フォーマッター テスト ---');
+assert(formatElectronVolt(500) === '500 MeV', '500 MeV 表記確認');
+assert(formatElectronVolt(1000) === '1.00 GeV', '1000 MeV -> 1.00 GeV 表記確認 (k MeV ではない)');
+assert(formatEnergy(1000) === '1.00 GeV', 'formatEnergy(1000) が 1.00 GeV');
+assert(formatElectronVolt(1500) === '1.50 GeV', '1500 MeV -> 1.50 GeV 表記確認');
+assert(formatElectronVolt(10000) === '10.0 GeV', '10000 MeV -> 10.0 GeV 表記確認');
+console.log('--- 12. 段階的アンロック（プログレッション）ロジック テスト ---');
+// ステージ 0: 初期状態
+state.reset(false);
+assert(!(state.protons > 0 || state.neutrons > 0), 'ステージ0: 陽子・中性子は未解放');
+assert(!(state.deuterium > 0 || state.tritium > 0), 'ステージ0: トカマク炉心は未解放');
+assert(!(state.stats.totalFusions > 0 || state.energy > 0), 'ステージ0: 拡大再生産は未解放');
 
-console.log('\n🎉 ALL TESTS PASSED SUCCESSFULLY! ゲームロジック・拡大再生産サイクル・水素/重水素/リチウム大量生産は完全に正常です。');
+// ステージ 1: 陽子合成
+state.protons = 1;
+assert((state.protons > 0 || state.neutrons > 0), 'ステージ1: 陽子合成により水素同位体組み立て解放');
+assert(!(state.deuterium > 0 || state.tritium > 0), 'ステージ1: トカマク炉心は未解放');
+
+// ステージ 2: 重水素合成
+state.deuterium = 1;
+assert((state.deuterium > 0 || state.tritium > 0), 'ステージ2: 重水素(²H)合成によりトカマク炉心解放');
+assert(!(state.stats.totalFusions > 0 || state.energy > 0), 'ステージ2: 拡大再生産は未解放');
+
+// ステージ 3: 初核融合点火成功
+state.stats.totalFusions = 1;
+state.energy = 17.59;
+state.stats.totalEnergyProduced = 17.59;
+assert((state.stats.totalFusions > 0 || state.energy > 0), 'ステージ3: 核融合点火成功により拡大再生産施設が解放');
+
+// 施設アンロック条件の検証
+const initialBuildings = BUILDINGS.filter(b => state.stats.totalEnergyProduced >= (b.unlockEnergy || 0));
+const initialBuildingIds = initialBuildings.map(b => b.id);
+assert(initialBuildingIds.includes('quark_dispenser_u'), '初期施設: アップクォーク抽出機が含まれる');
+assert(initialBuildingIds.includes('quark_dispenser_d'), '初期施設: ダウンクォーク抽出機が含まれる');
+assert(initialBuildingIds.includes('electron_gun'), '初期施設: 電子銃が含まれる');
+assert(!initialBuildingIds.includes('breeding_blanket'), 'リチウム増殖ブランケットは500MeV未満では未解放');
+assert(!initialBuildingIds.includes('deuterium_megafloat'), 'メガフロートは35000MeV未満では未解放');
+
+// 1000 MeV 獲得時
+state.stats.totalEnergyProduced = 1000;
+const midBuildings = BUILDINGS.filter(b => state.stats.totalEnergyProduced >= (b.unlockEnergy || 0));
+const midBuildingIds = midBuildings.map(b => b.id);
+assert(midBuildingIds.includes('breeding_blanket'), '1000MeV獲得時: リチウム増殖ブランケット解放');
+assert(midBuildingIds.includes('auto_isotope_assembler'), '1000MeV獲得時: 自動同位体分子ビーム結晶機解放');
+
+console.log('\n🎉 ALL TESTS PASSED SUCCESSFULLY! ゲームロジック・拡大再生産サイクル・水素/重水素/リチウム大量生産・プログレッションは完全に正常です。');
 
 

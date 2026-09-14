@@ -32,6 +32,14 @@ class GameApp {
 
         this.lastTime = performance.now();
         this.autoSaveTimer = 0;
+
+        // アンロック通知履歴
+        this.unlockHistory = {
+            isotopeCrafting: false,
+            reactorUnlocked: false,
+            expansionUnlocked: false,
+            researchUnlocked: false,
+        };
     }
 
     init() {
@@ -75,6 +83,11 @@ class GameApp {
         // 4. 保存データのロード
         if (state.load()) {
             this.logView.add('セーブデータを復帰しました。', 'info');
+            // セーブデータがある場合は過去実績に応じて履歴を初期化（通知連発を防ぐ）
+            if (state.protons > 0 || state.neutrons > 0 || state.stats.totalFusions > 0) this.unlockHistory.isotopeCrafting = true;
+            if (state.deuterium > 0 || state.tritium > 0 || state.stats.totalFusions > 0) this.unlockHistory.reactorUnlocked = true;
+            if (state.stats.totalFusions > 0 || state.energy > 0) this.unlockHistory.expansionUnlocked = true;
+            if (state.stats.totalEnergyProduced >= 100) this.unlockHistory.researchUnlocked = true;
         } else {
             this.logView.add('FUSION GENESIS へようこそ。クォークを射出して陽子・中性子を創り出しましょう！', 'info');
         }
@@ -120,24 +133,39 @@ class GameApp {
         // --- ハドロン・同位体合成ボタン ---
         document.getElementById('btnCraftProton').addEventListener('click', () => {
             const count = this.particleSystem.craftProton(1);
-            if (count > 0) this.logView.add(`陽子 p を 1 個合成しました。`, 'info');
+            if (count > 0) {
+                this.logView.add(`陽子 p を 1 個合成しました。`, 'info');
+                this.particleChamber.createSynthesisEffect('+1 陽子 p', '#ff0055');
+            }
         });
         document.getElementById('btnCraftNeutron').addEventListener('click', () => {
             const count = this.particleSystem.craftNeutron(1);
-            if (count > 0) this.logView.add(`中性子 n を 1 個合成しました。`, 'info');
+            if (count > 0) {
+                this.logView.add(`中性子 n を 1 個合成しました。`, 'info');
+                this.particleChamber.createSynthesisEffect('+1 中性子 n', '#00b4d8');
+            }
         });
 
         document.getElementById('btnCraftHydrogen').addEventListener('click', () => {
             const count = this.particleSystem.craftHydrogen(1);
-            if (count > 0) this.logView.add(`軽水素 ¹H を 1 個組み立てました。`, 'info');
+            if (count > 0) {
+                this.logView.add(`軽水素 ¹H を 1 個組み立てました。`, 'info');
+                this.particleChamber.createSynthesisEffect('+1 軽水素 ¹H', '#90e0ef');
+            }
         });
         document.getElementById('btnCraftDeuterium').addEventListener('click', () => {
             const count = this.particleSystem.craftDeuterium(1);
-            if (count > 0) this.logView.add(`重水素 ²H (D) を 1 個組み立てました。`, 'success');
+            if (count > 0) {
+                this.logView.add(`重水素 ²H を 1 個組み立てました。`, 'success');
+                this.particleChamber.createSynthesisEffect('+1 重水素 ²H', '#06d6a0');
+            }
         });
         document.getElementById('btnCraftTritium').addEventListener('click', () => {
             const count = this.particleSystem.craftTritium(1);
-            if (count > 0) this.logView.add(`三重水素 ³H (T) を 1 個組み立てました！`, 'fusion');
+            if (count > 0) {
+                this.logView.add(`三重水素 ³H を 1 個組み立てました！`, 'fusion');
+                this.particleChamber.createSynthesisEffect('+1 三重水素 ³H', '#f72585');
+            }
         });
         document.getElementById('btnQuickCraftAll').addEventListener('click', () => {
             const res = this.particleSystem.craftAllIsotopes();
@@ -146,9 +174,10 @@ class GameApp {
                 const parts = [];
                 if (res.protons > 0) parts.push(`陽子 +${formatNumber(res.protons)}`);
                 if (res.neutrons > 0) parts.push(`中性子 +${formatNumber(res.neutrons)}`);
-                if (res.deuterium > 0) parts.push(`重水素 +${formatNumber(res.deuterium)}`);
-                if (res.tritium > 0) parts.push(`三重水素 +${formatNumber(res.tritium)}`);
+                if (res.deuterium > 0) parts.push(`重水素 ²H +${formatNumber(res.deuterium)}`);
+                if (res.tritium > 0) parts.push(`三重水素 ³H +${formatNumber(res.tritium)}`);
                 this.logView.add(`⚡ 一括全合成完了: ${parts.join(', ')}`, 'success');
+                this.particleChamber.createSynthesisEffect(`⚡ 一括合成 +${total}`, '#00f5d4');
             } else {
                 this.logView.add(`合成可能なクォークまたは核子が不足しています。`, 'info');
             }
@@ -158,13 +187,13 @@ class GameApp {
         document.getElementById('btnInjectD').addEventListener('click', () => {
             const amt = Math.max(1, Math.floor(state.deuterium * 0.5));
             if (this.fusionSystem.injectFuel(amt, 0)) {
-                this.logView.add(`重水素 ${amt} 個を炉心プラズマへ注入しました。`, 'info');
+                this.logView.add(`重水素 ²H ${amt} 個を炉心プラズマへ注入しました。`, 'info');
             }
         });
         document.getElementById('btnInjectT').addEventListener('click', () => {
             const amt = Math.max(1, Math.floor(state.tritium * 0.5));
             if (this.fusionSystem.injectFuel(0, amt)) {
-                this.logView.add(`三重水素 ${amt} 個を炉心プラズマへ注入しました。`, 'info');
+                this.logView.add(`三重水素 ³H ${amt} 個を炉心プラズマへ注入しました。`, 'info');
             }
         });
 
@@ -180,7 +209,7 @@ class GameApp {
             if (ignited) {
                 this.logView.add(`⚡ 磁気パルス点火成功！ 核融合反応が発生しました！`, 'fusion');
             } else {
-                this.logView.add(`燃料（重水素 D または 三重水素 T）を炉心に注入してください。`, 'info');
+                this.logView.add(`燃料（重水素 ²H または 三重水素 ³H）を炉心に注入してください。`, 'info');
             }
         });
 
@@ -290,6 +319,7 @@ class GameApp {
         // 初回施設・研究リスト描画
         this._renderBuildingList();
         this._renderResearchList();
+        this._checkProgressionUnlocks();
         this._updateDynamicUI();
     }
 
@@ -305,17 +335,43 @@ class GameApp {
             proton: 'p',
             neutron: 'n',
             hydrogen: '¹H',
-            deuterium: 'D',
-            tritium: 'T',
+            deuterium: '²H',
+            tritium: '³H',
             helium: '⁴He',
             fastNeutron: '高速n',
             lithium6: '⁶Li'
         };
 
-        container.innerHTML = BUILDINGS.map(b => {
+        // 累計エネルギーまたは保有数で表示対象をフィルタリング (段階的アンロック)
+        const visibleBuildings = BUILDINGS.filter(b => {
+            if ((state.buildings[b.id] || 0) > 0) return true;
+            return state.stats.totalEnergyProduced >= (b.unlockEnergy || 0);
+        });
+
+        container.innerHTML = visibleBuildings.map(b => {
             const cost = state.getBuildingCost(b.id);
             const count = state.buildings[b.id] || 0;
-            const costText = Object.entries(cost).map(([k, v]) => `${v} ${resLabels[k] || k}`).join(', ');
+            const costText = Object.entries(cost).map(([k, v]) => {
+                if (k === 'energy') return formatEnergy(v);
+                return `${v} ${resLabels[k] || k}`;
+            }).join(', ');
+
+            // 合計効果の計算
+            let totalEffectText = '';
+            if (count > 0) {
+                if (b.production?.up) totalEffectText = ` (合計: +${formatNumber(count * b.production.up, 1)}/秒)`;
+                else if (b.production?.down) totalEffectText = ` (合計: +${formatNumber(count * b.production.down, 1)}/秒)`;
+                else if (b.production?.electron) totalEffectText = ` (合計: +${formatNumber(count * b.production.electron, 1)}/秒)`;
+                else if (b.productionHadronRate) totalEffectText = ` (合計: ${formatNumber(count * b.productionHadronRate, 1)}回/秒)`;
+                else if (b.productionAtomRate) totalEffectText = ` (合計: 最大+${formatNumber(count * 0.8, 1)}個/秒)`;
+                else if (b.lithiumRate) totalEffectText = ` (合計: +${formatNumber(count * b.lithiumRate, 0)}/秒)`;
+                else if (b.hydrogenRate) totalEffectText = ` (合計: +${formatNumber(count * b.hydrogenRate, 0)}/秒)`;
+                else if (b.deuteriumRate) totalEffectText = ` (合計: +${formatNumber(count * b.deuteriumRate, 0)}/秒)`;
+                else if (b.tauBoost) totalEffectText = ` (合計: +${(count * b.tauBoost).toFixed(2)}秒)`;
+                else if (b.tempBoost) totalEffectText = ` (合計: +${(count * b.tempBoost).toFixed(1)} keV)`;
+                else if (b.densityBoost) totalEffectText = ` (合計: +${(count * b.densityBoost).toFixed(1)})`;
+                else if (b.efficiencyBoost) totalEffectText = ` (合計: +${(count * b.efficiencyBoost * 100).toFixed(0)}%)`;
+            }
 
             return `
                 <div class="building-card" id="bcard-${b.id}">
@@ -324,6 +380,11 @@ class GameApp {
                         <div class="b-info">
                             <span class="b-name">${b.name}</span>
                             <span class="b-desc">${b.desc}</span>
+                            <div class="b-effect ${count > 0 ? 'is-active' : ''}">
+                                <span>⚡ 生産/効果:</span>
+                                <span>${b.effectDesc || ''}</span>
+                                <span class="b-effect-total">${totalEffectText}</span>
+                            </div>
                             <span class="b-cost">コスト: ${costText}</span>
                         </div>
                     </div>
@@ -361,8 +422,8 @@ class GameApp {
             proton: 'p',
             neutron: 'n',
             hydrogen: '¹H',
-            deuterium: 'D',
-            tritium: 'T',
+            deuterium: '²H',
+            tritium: '³H',
             helium: '⁴He',
             fastNeutron: '高速n',
             lithium6: '⁶Li'
@@ -370,7 +431,10 @@ class GameApp {
 
         container.innerHTML = RESEARCH_TECH.map(t => {
             const unlocked = state.unlockedTechs[t.id];
-            const costText = Object.entries(t.cost).map(([k, v]) => `${v} ${resLabels[k] || k}`).join(', ');
+            const costText = Object.entries(t.cost).map(([k, v]) => {
+                if (k === 'energy') return formatEnergy(v);
+                return `${v} ${resLabels[k] || k}`;
+            }).join(', ');
 
             return `
                 <div class="building-card" style="${unlocked ? 'opacity: 0.6; border-color: var(--c-deuterium);' : ''}">
@@ -438,7 +502,110 @@ class GameApp {
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
+    _checkProgressionUnlocks() {
+        const hadProtonOrNeutron = state.protons > 0 || state.neutrons > 0 || state.stats.totalFusions > 0 || state.energy > 0;
+        const hadIsotope = state.deuterium > 0 || state.tritium > 0 || state.stats.totalFusions > 0 || state.energy > 0;
+        const hadFusion = state.stats.totalFusions > 0 || state.stats.totalEnergyProduced > 0 || state.energy > 0;
+
+        // 1. リソースバーの表示/非表示
+        const elEnergy = document.getElementById('resGroupEnergy');
+        if (elEnergy) elEnergy.style.display = hadFusion ? 'flex' : 'none';
+
+        const elHadrons = document.getElementById('resGroupHadrons');
+        if (elHadrons) elHadrons.style.display = hadProtonOrNeutron ? 'flex' : 'none';
+
+        const elIsotopes = document.getElementById('resGroupIsotopes');
+        if (elIsotopes) elIsotopes.style.display = hadProtonOrNeutron ? 'flex' : 'none';
+
+        const elProducts = document.getElementById('resGroupProducts');
+        if (elProducts) elProducts.style.display = hadFusion ? 'flex' : 'none';
+
+        // 2. 左カラム: 水素同位体組み立てカード
+        const elIsotopeCard = document.getElementById('cardIsotopeCrafting');
+        const elIsotopeLocked = document.getElementById('isotopeLockedPlaceholder');
+        const btnQuickCraft = document.getElementById('btnQuickCraftAll');
+        if (elIsotopeCard && elIsotopeLocked) {
+            if (hadProtonOrNeutron) {
+                elIsotopeCard.style.display = 'block';
+                elIsotopeLocked.style.display = 'none';
+                if (btnQuickCraft) btnQuickCraft.style.display = 'inline-flex';
+                if (!this.unlockHistory.isotopeCrafting) {
+                    this.unlockHistory.isotopeCrafting = true;
+                    this.showToast('💡 水素同位体組み立てがアンロックされました！', '🧬');
+                    this.logView.add('【新機能解放】水素同位体（軽水素・重水素・三重水素）の組み立てが認可されました！', 'success');
+                }
+            } else {
+                elIsotopeCard.style.display = 'none';
+                elIsotopeLocked.style.display = 'flex';
+                if (btnQuickCraft) btnQuickCraft.style.display = 'none';
+            }
+        }
+
+        // 3. 中央カラム: トカマク核融合炉
+        const elReactorActive = document.getElementById('reactorActiveContent');
+        const elReactorLocked = document.getElementById('reactorLockedPlaceholder');
+        if (elReactorActive && elReactorLocked) {
+            if (hadIsotope) {
+                elReactorActive.style.display = 'flex';
+                elReactorLocked.style.display = 'none';
+                if (!this.unlockHistory.reactorUnlocked) {
+                    this.unlockHistory.reactorUnlocked = true;
+                    this.showToast('🔥 トカマク核融合炉が起動しました！', '⚡');
+                    this.logView.add('【新機能解放】トカマク型磁場閉じ込め核融合炉が起動！重水素(²H)と三重水素(³H)を注入して点火しましょう！', 'fusion');
+                }
+            } else {
+                elReactorActive.style.display = 'none';
+                elReactorLocked.style.display = 'flex';
+            }
+        }
+
+        // 4. 右カラム: 拡大再生産 & 研究開発
+        const elExpActive = document.getElementById('expansionActiveContent');
+        const elExpLocked = document.getElementById('expansionLockedPlaceholder');
+        const elExpHeader = document.getElementById('expansionHeader');
+        if (elExpActive && elExpLocked) {
+            if (hadFusion) {
+                elExpActive.style.display = 'block';
+                elExpLocked.style.display = 'none';
+                if (elExpHeader) elExpHeader.style.visibility = 'visible';
+                if (!this.unlockHistory.expansionUnlocked) {
+                    this.unlockHistory.expansionUnlocked = true;
+                    this.showToast('🏗️ 拡大再生産施設が認可されました！', '✨');
+                    this.logView.add('【新機能解放】獲得エネルギーを投じ、自動素粒子抽出機や増殖ブランケットを建設して拡大再生産を推進しましょう！', 'breeding');
+                    this._renderBuildingList();
+                }
+            } else {
+                elExpActive.style.display = 'none';
+                elExpLocked.style.display = 'flex';
+                if (elExpHeader) elExpHeader.style.visibility = 'hidden';
+            }
+        }
+
+        // リチウム補充クイックバーの表示制御
+        const elLiBar = document.getElementById('lithiumQuickBar');
+        if (elLiBar) {
+            const hasBlanket = (state.buildings['breeding_blanket'] || 0) > 0 || state.fastNeutrons > 0;
+            elLiBar.style.display = hasBlanket ? 'block' : 'none';
+        }
+
+        // 研究開発タブの制御 (累計エネルギー 100 MeV 以上でアンロック)
+        const tabR = document.getElementById('tabResearchBtn');
+        if (tabR) {
+            const hasResearchUnlock = state.stats.totalEnergyProduced >= 100 || Object.values(state.unlockedTechs).some(v => v);
+            tabR.disabled = !hasResearchUnlock;
+            tabR.title = hasResearchUnlock ? '研究開発' : '累計エネルギー 100 MeV でアンロック';
+            tabR.style.opacity = hasResearchUnlock ? '1' : '0.4';
+            if (hasResearchUnlock && !this.unlockHistory.researchUnlocked) {
+                this.unlockHistory.researchUnlocked = true;
+                this.showToast('🔬 研究開発 (Research) がアンロック！', '🔬');
+                this.logView.add('【新機能解放】研究開発タブが解放されました。テクノロジーを習得して炉心効率を高めましょう！', 'info');
+            }
+        }
+    }
+
     _updateDynamicUI() {
+        this._checkProgressionUnlocks();
+
         // リソース表示
         document.getElementById('resEnergy').textContent = formatEnergy(state.energy);
         document.getElementById('resUp').textContent = formatNumber(state.upQuarks);
@@ -530,8 +697,15 @@ class GameApp {
 
             state.stats.timePlayed += simDt;
 
+            // 自動抽出機の稼働状況をParticleChamberに伝達
+            const autoRates = {
+                up: state.buildings['quark_dispenser_u'] || 0,
+                down: state.buildings['quark_dispenser_d'] || 0,
+                electron: state.buildings['electron_gun'] || 0,
+            };
+
             // 各システム更新
-            this.particleChamber.update(simDt);
+            this.particleChamber.update(simDt, autoRates);
             this.fusionSystem.update(simDt);
             this.plasmaReactor.update(simDt, state.reactor);
             this.automationSystem.update(simDt);

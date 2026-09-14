@@ -22,6 +22,10 @@ export class ParticleChamber {
 
         this.selectedType = 'up'; // プレイヤーが直接クリックして発射する粒子
 
+        // 自動生産エフェクト用タイマー
+        this.autoSpawnTimer = 0;
+        this.activeAutoRates = { up: 0, down: 0, electron: 0 };
+
         this._setupEvents();
     }
 
@@ -53,7 +57,7 @@ export class ParticleChamber {
     }
 
     // 粒子の射出
-    shootParticle(type, x, y, vx, vy) {
+    shootParticle(type, x, y, vx, vy, isAuto = false) {
         if (this.particles.length >= this.maxParticles) {
             // 最も古い粒子を1つ除外
             this.particles.shift();
@@ -76,10 +80,81 @@ export class ParticleChamber {
             bound: false,
         });
 
-        sound.playShoot(type);
+        if (!isAuto) {
+            sound.playShoot(type);
+        }
     }
 
-    update(dt = 1/60) {
+    // 自動抽出機からのスポーン演出
+    spawnAutoParticle(type) {
+        // ノズル位置（上部の左右または上端）から中央に向かって射出
+        const fromLeft = Math.random() < 0.5;
+        const startX = fromLeft ? 25 + Math.random() * 30 : this.width - (25 + Math.random() * 30);
+        const startY = 20 + Math.random() * 15;
+        const targetX = this.width / 2 + (Math.random() - 0.5) * 60;
+        const targetY = this.height / 2 + (Math.random() - 0.5) * 40;
+        const angle = Math.atan2(targetY - startY, targetX - startX);
+        const speed = 2.5 + Math.random() * 2.5;
+
+        this.shootParticle(type, startX, startY, Math.cos(angle) * speed, Math.sin(angle) * speed, true);
+    }
+
+    // 合成エフェクト（手動ボタン押下時または自動結合炉の稼働時）
+    createSynthesisEffect(label, color = '#00f5d4') {
+        const cx = this.width / 2 + (Math.random() - 0.5) * 30;
+        const cy = this.height / 2 + (Math.random() - 0.5) * 20;
+
+        this.effects.push({
+            type: 'hadron_flash',
+            x: cx,
+            y: cy,
+            color: color,
+            label: label,
+            age: 0,
+            maxAge: 0.9,
+        });
+
+        // 放射状スパーク
+        for (let i = 0; i < 16; i++) {
+            const ang = (Math.PI * 2 * i) / 16 + (Math.random() - 0.5) * 0.2;
+            const spd = 2 + Math.random() * 3.5;
+            this.effects.push({
+                type: 'spark',
+                x: cx,
+                y: cy,
+                vx: Math.cos(ang) * spd,
+                vy: Math.sin(ang) * spd,
+                color: color,
+                age: 0,
+                maxAge: 0.5,
+            });
+        }
+    }
+
+    update(dt = 1/60, autoRates = null) {
+        if (autoRates) {
+            this.activeAutoRates = autoRates;
+        }
+
+        // 自動抽出粒子スポーン処理
+        const totalAutoRate = (this.activeAutoRates.up || 0) + (this.activeAutoRates.down || 0) + (this.activeAutoRates.electron || 0);
+        if (totalAutoRate > 0) {
+            this.autoSpawnTimer += dt;
+            const spawnInterval = Math.max(0.18, 1.2 / Math.min(totalAutoRate, 10));
+            if (this.autoSpawnTimer >= spawnInterval) {
+                this.autoSpawnTimer = 0;
+                // レート比率に応じてスポーンする粒子を選択
+                const pool = [];
+                if (this.activeAutoRates.up > 0) pool.push('up');
+                if (this.activeAutoRates.down > 0) pool.push('down');
+                if (this.activeAutoRates.electron > 0) pool.push('electron');
+                if (pool.length > 0) {
+                    const picked = pool[Math.floor(Math.random() * pool.length)];
+                    this.spawnAutoParticle(picked);
+                }
+            }
+        }
+
         const bounceDamping = 0.85;
         const drag = 0.992;
 
@@ -339,6 +414,32 @@ export class ParticleChamber {
         ctx.beginPath();
         ctx.arc(this.width / 2, this.height, 24, Math.PI, 0);
         ctx.stroke();
+        ctx.restore();
+
+        // 上部 自動インジェクターノズルの意匠 (左右)
+        const totalAuto = (this.activeAutoRates.up || 0) + (this.activeAutoRates.down || 0) + (this.activeAutoRates.electron || 0);
+        const nozzleColor = totalAuto > 0 ? 'rgba(0, 245, 212, 0.7)' : 'rgba(255, 255, 255, 0.15)';
+
+        ctx.save();
+        ctx.fillStyle = nozzleColor;
+        ctx.strokeStyle = totalAuto > 0 ? '#00f5d4' : 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1;
+
+        // 左ノズル
+        ctx.fillRect(25, 0, 30, 8);
+        ctx.strokeRect(25, 0, 30, 8);
+        // 右ノズル
+        ctx.fillRect(this.width - 55, 0, 30, 8);
+        ctx.strokeRect(this.width - 55, 0, 30, 8);
+
+        // 自動稼働中HUD表示
+        if (totalAuto > 0) {
+            ctx.font = 'bold 9px "Segoe UI", sans-serif';
+            ctx.fillStyle = '#00f5d4';
+            ctx.textAlign = 'center';
+            const rateStr = `⚡ 自動注入中: +${totalAuto.toFixed(1)}/s`;
+            ctx.fillText(rateStr, this.width / 2, 14);
+        }
         ctx.restore();
     }
 

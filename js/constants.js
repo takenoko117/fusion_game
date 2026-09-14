@@ -95,16 +95,16 @@ export const ATOM_RECIPES = {
     },
     DEUTERIUM: {
         id: 'deuterium',
-        name: '重水素 (デューテリウム)',
-        symbol: '²H (D)',
+        name: '重水素 (²H)',
+        symbol: '²H',
         composition: { proton: 1, neutron: 1, electron: 1 },
         desc: '陽子1個、中性子1個、電子1個。海水中におよそ7000個に1個の割合で無尽蔵に存在する。',
         color: '#06d6a0',
     },
     TRITIUM: {
         id: 'tritium',
-        name: '三重水素 (トリチウム)',
-        symbol: '³H (T)',
+        name: '三重水素 (³H)',
+        symbol: '³H',
         composition: { proton: 1, neutron: 2, electron: 1 },
         desc: '陽子1個、中性子2個、電子1個。半減期12.3年の放射性同位体。地球上の天然にはごく微量しか存在しないため、核融合炉内でリチウムから「増殖」させて調達する。',
         color: '#f72585',
@@ -121,6 +121,8 @@ export const BUILDINGS = [
         cost: { energy: 10 },
         costMultiplier: 1.15,
         production: { up: 1 }, // 毎秒
+        effectDesc: 'アップクォーク(u) +1.0/秒',
+        unlockEnergy: 0,
         icon: '⚛️',
     },
     {
@@ -131,6 +133,8 @@ export const BUILDINGS = [
         cost: { energy: 12 },
         costMultiplier: 1.15,
         production: { down: 1 },
+        effectDesc: 'ダウンクォーク(d) +1.0/秒',
+        unlockEnergy: 0,
         icon: '💠',
     },
     {
@@ -141,6 +145,8 @@ export const BUILDINGS = [
         cost: { energy: 8 },
         costMultiplier: 1.14,
         production: { electron: 1 },
+        effectDesc: '電子(e⁻) +1.0/秒',
+        unlockEnergy: 0,
         icon: '⚡',
     },
     {
@@ -151,26 +157,32 @@ export const BUILDINGS = [
         cost: { energy: 50 },
         costMultiplier: 1.2,
         productionHadronRate: 1, // 毎秒1回自動合成
+        effectDesc: '陽子(p) または 中性子(n) 自動結合 1.0回/秒',
+        unlockEnergy: 30,
         icon: '🔄',
     },
     {
         id: 'auto_isotope_assembler',
         name: '自動同位体分子ビーム結晶機',
-        desc: '核子と電子をクーロン電場で捕捉し、重水素や三重水素を自動合成します。',
+        desc: '核子と電子を整列させて水素同位体を自動合成。【合成仕様】中性子2個以上で三重水素(³H)を優先合成、1個なら重水素(²H)を自動合成します。',
         category: 'synthesis',
         cost: { energy: 200 },
         costMultiplier: 1.22,
         productionAtomRate: 1,
+        effectDesc: '重水素(²H) または 三重水素(³H) 最大0.8個/秒 (中性子2個以上で³H優先)',
+        unlockEnergy: 100,
         icon: '🧬',
     },
     {
         id: 'breeding_blanket',
         name: 'リチウム増殖ブランケット',
-        desc: 'D-T核融合で生じる高速中性子(14.1MeV)を捕獲: ⁶Li + n → ⁴He + ³H + 4.8MeV。三重水素を自律自己増殖させ、拡大再生産のループを完成させます！',
+        desc: 'D-T核融合の高速中性子(14.1MeV)を捕獲: ⁶Li + n → ⁴He + ³H + 4.8MeV。三重水素を自立増殖させ、拡大再生産ループを完成！',
         category: 'fusion',
         cost: { energy: 1000, deuterium: 5, helium: 2 },
         costMultiplier: 1.25,
         tritiumBreedingRatio: 1.15, // 1中性子から1.15個のトリチウムを増殖
+        effectDesc: 'トリチウム(³H) 自己増殖 (TBR 1.15倍) +4.78 MeV/反応',
+        unlockEnergy: 500,
         icon: '🛡️',
     },
     {
@@ -181,6 +193,8 @@ export const BUILDINGS = [
         cost: { energy: 3000 },
         costMultiplier: 1.3,
         tauBoost: 0.15, // 閉じ込め時間 +0.15秒
+        effectDesc: '炉心閉じ込め時間 τ_E +0.15 秒',
+        unlockEnergy: 1500,
         icon: '🧲',
     },
     {
@@ -191,6 +205,8 @@ export const BUILDINGS = [
         cost: { energy: 8000 },
         costMultiplier: 1.35,
         tempBoost: 2.0, // keV
+        effectDesc: '炉心中心温度 +2.0 keV (約2300万℃)',
+        unlockEnergy: 4000,
         icon: '🎯',
     },
     {
@@ -201,16 +217,20 @@ export const BUILDINGS = [
         cost: { energy: 20000 },
         costMultiplier: 1.4,
         densityBoost: 0.5, // 10^20 m^-3
+        effectDesc: 'プラズマ中心密度 n +0.5 × 10²⁰ m⁻³',
+        unlockEnergy: 10000,
         icon: '🧊',
     },
     {
         id: 'advanced_divertor',
         name: '液体リチウム流動ダイバータ & MHD熱回収発電機',
-        desc: 'プラズマ境界の熱と不純物(ヘリウム灰)を排出しつつ、直截磁気流体力学(MHD)で核融合熱を驚異の変換効率で電力化します。',
+        desc: 'プラズマ境界の熱と不純物を排出しつつ、直截磁気流体力学(MHD)で核融合熱を高効率電力化します。',
         category: 'fusion',
         cost: { energy: 80000 },
         costMultiplier: 1.45,
         efficiencyBoost: 0.25, // 発電効率UP
+        effectDesc: '核融合発電効率 +25%',
+        unlockEnergy: 30000,
         icon: '🌀',
     },
     {
@@ -221,6 +241,8 @@ export const BUILDINGS = [
         cost: { energy: 400, hydrogen: 10 },
         costMultiplier: 1.18,
         lithiumRate: 5, // 毎秒5 Li
+        effectDesc: 'リチウム-6(⁶Li) +5.0/秒',
+        unlockEnergy: 200,
         icon: '🌊',
     },
     {
@@ -231,16 +253,20 @@ export const BUILDINGS = [
         cost: { energy: 4000, helium: 5 },
         costMultiplier: 1.25,
         lithiumRate: 50, // 毎秒50 Li
+        effectDesc: 'リチウム-6(⁶Li) +50/秒',
+        unlockEnergy: 2000,
         icon: '🔬',
     },
     {
         id: 'orbital_lithium_harvester',
         name: '小惑星帯リチウム採掘ドローン船団',
-        desc: '小惑星帯(アステロイドベルト)の豊富な鉱床からリチウムを高出力マスドライバーで地球軌道へ直送。毎秒500個を爆発的大量供給します！',
+        desc: '小惑星帯(アステロイドベルト)の豊富な鉱床からリチウムを高出力マスドライバーで地球軌道へ直送。毎秒500個を爆発的大量供給！',
         category: 'breeding',
         cost: { energy: 45000, helium: 50 },
         costMultiplier: 1.35,
         lithiumRate: 500, // 毎秒500 Li
+        effectDesc: 'リチウム-6(⁶Li) +500/秒',
+        unlockEnergy: 25000,
         icon: '🚀',
     },
     {
@@ -251,6 +277,8 @@ export const BUILDINGS = [
         cost: { energy: 200, electron: 4 },
         costMultiplier: 1.15,
         hydrogenRate: 20, // 毎秒20 H
+        effectDesc: '軽水素(¹H) +20/秒',
+        unlockEnergy: 50,
         icon: '⚗️',
     },
     {
@@ -261,6 +289,8 @@ export const BUILDINGS = [
         cost: { energy: 2500, helium: 3 },
         costMultiplier: 1.22,
         hydrogenRate: 200, // 毎秒200 H
+        effectDesc: '軽水素(¹H) +200/秒',
+        unlockEnergy: 1200,
         icon: '🏭',
     },
     {
@@ -271,36 +301,44 @@ export const BUILDINGS = [
         cost: { energy: 25000, helium: 25 },
         costMultiplier: 1.30,
         hydrogenRate: 2000, // 毎秒2000 H
+        effectDesc: '軽水素(¹H) +2,000/秒',
+        unlockEnergy: 15000,
         icon: '⚡',
     },
     {
         id: 'deuterium_extractor_gs',
         name: 'ギルドラー・サルファイド式 海水重水電解プラント',
-        desc: '海水中(約7,000個に1個の割合)に含まれる重水(D₂O)を硫化水素-水二温度同位体交換法と電解で抽出。重水素(²H/D)を毎秒10個自動供給します。',
+        desc: '海水中から硫化水素-水二温度同位体交換法と電解で重水(D₂O)を抽出。重水素(²H)を毎秒10個自動供給します。',
         category: 'fuel',
         cost: { energy: 600, hydrogen: 15 },
         costMultiplier: 1.18,
         deuteriumRate: 10, // 毎秒10 D
+        effectDesc: '重水素(²H) +10/秒',
+        unlockEnergy: 300,
         icon: '💧',
     },
     {
         id: 'deuterium_distillery_cryo',
         name: '極低温液体水素 精密蒸留コンプレックス',
-        desc: '海水を電気分解して得た水素ガスを極低温(20K)で液化・精密蒸留。沸点差を利用して高純度重水素(D₂)を毎秒100個大量精製します。',
+        desc: '海水を電気分解して得た水素ガスを極低温(20K)で液化・精密蒸留。沸点差を利用して高純度重水素(²H)を毎秒100個大量精製します。',
         category: 'fuel',
         cost: { energy: 6000, hydrogen: 50, helium: 8 },
         costMultiplier: 1.25,
         deuteriumRate: 100, // 毎秒100 D
+        effectDesc: '重水素(²H) +100/秒',
+        unlockEnergy: 3000,
         icon: '🏭',
     },
     {
         id: 'deuterium_megafloat',
         name: '海洋直接触媒抽出メガフロート群',
-        desc: '巨大洋上プラントが海洋深層水を取り込み、ナノ多孔質グラフェン触媒膜で重水素を直接分離。毎秒1,000個の重水素を爆発的大量生産します！',
+        desc: '巨大洋上プラントが海洋深層水を取り込み、ナノ多孔質グラフェン触媒膜で重水素を直接分離。毎秒1,000個の重水素(²H)を爆発的大量生産！',
         category: 'fuel',
         cost: { energy: 65000, hydrogen: 200, helium: 70 },
         costMultiplier: 1.35,
         deuteriumRate: 1000, // 毎秒1000 D
+        effectDesc: '重水素(²H) +1,000/秒',
+        unlockEnergy: 35000,
         icon: '🌊',
     },
 ];

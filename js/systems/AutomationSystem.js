@@ -110,11 +110,17 @@ export class AutomationSystem {
                 this.state.upQuarks -= amount * 2;
                 this.state.downQuarks -= amount * 1;
                 this.state.protons += amount;
+                if (amount > 0 && Math.random() < 0.25 && this.particleSystem?.chamber) {
+                    this.particleSystem.chamber.createSynthesisEffect('自動結合: 陽子 p', '#ff0055');
+                }
             } else if (this.state.upQuarks >= 1 && this.state.downQuarks >= 2) {
                 const amount = Math.min(toCraft, Math.floor(this.state.downQuarks / 2));
                 this.state.upQuarks -= amount * 1;
                 this.state.downQuarks -= amount * 2;
                 this.state.neutrons += amount;
+                if (amount > 0 && Math.random() < 0.25 && this.particleSystem?.chamber) {
+                    this.particleSystem.chamber.createSynthesisEffect('自動結合: 中性子 n', '#00b4d8');
+                }
             }
         }
 
@@ -131,12 +137,18 @@ export class AutomationSystem {
                 this.state.neutrons -= amt * 2;
                 this.state.electrons -= amt;
                 this.state.tritium += amt;
+                if (amt > 0 && Math.random() < 0.25 && this.particleSystem?.chamber) {
+                    this.particleSystem.chamber.createSynthesisEffect('自動結晶化: 三重水素 ³H', '#f72585');
+                }
             } else if (this.state.protons >= 1 && this.state.electrons >= 1 && this.state.neutrons >= 1) {
                 const amt = Math.min(toCraft, this.state.neutrons);
                 this.state.protons -= amt;
                 this.state.neutrons -= amt;
                 this.state.electrons -= amt;
                 this.state.deuterium += amt;
+                if (amt > 0 && Math.random() < 0.25 && this.particleSystem?.chamber) {
+                    this.particleSystem.chamber.createSynthesisEffect('自動結晶化: 重水素 ²H', '#06d6a0');
+                }
             }
         }
 

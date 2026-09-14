@@ -250,30 +250,56 @@ export function formatNumber(val, decimals = 1) {
     return sign + val.toExponential(2);
 }
 
-// エネルギーフォーマッター (MeV と Joules を併記または動的切り替え)
+// 電子ボルト (eV) 単位系フォーマッター (MeV, GeV, TeV, PeV, EeV)
+export function formatElectronVolt(valMeV) {
+    if (!valMeV || valMeV <= 0) return '0 MeV';
+    const abs = Math.abs(valMeV);
+    const sign = valMeV < 0 ? '-' : '';
+
+    if (abs < 1000) {
+        return `${sign}${abs < 10 && !Number.isInteger(abs) ? abs.toFixed(1) : Math.round(abs)} MeV`;
+    }
+    if (abs < 1e6) {
+        const gev = abs / 1000;
+        return `${sign}${gev >= 100 ? gev.toFixed(0) : (gev >= 10 ? gev.toFixed(1) : gev.toFixed(2))} GeV`;
+    }
+    if (abs < 1e9) {
+        const tev = abs / 1e6;
+        return `${sign}${tev >= 100 ? tev.toFixed(0) : (tev >= 10 ? tev.toFixed(1) : tev.toFixed(2))} TeV`;
+    }
+    if (abs < 1e12) {
+        const pev = abs / 1e9;
+        return `${sign}${pev >= 100 ? pev.toFixed(0) : (pev >= 10 ? pev.toFixed(1) : pev.toFixed(2))} PeV`;
+    }
+    const eev = abs / 1e12;
+    return `${sign}${eev.toFixed(2)} EeV`;
+}
+
+// エネルギーフォーマッター (eV単位系とJoulesの併記)
 export function formatEnergy(valMeV) {
     if (!valMeV || valMeV <= 0) return '0 MeV';
+    const evText = formatElectronVolt(valMeV);
     const joules = valMeV * PHYSICS.MEV_TO_JOULE;
 
-    if (valMeV < 1000) {
-        return `${formatNumber(valMeV, 1)} MeV`;
+    if (joules < 1e-4) {
+        return evText;
     }
     if (joules < 1.0) {
-        return `${formatNumber(valMeV, 1)} MeV (${formatNumber(joules * 1e6, 1)} µJ)`;
+        return `${evText} (${formatNumber(joules * 1e6, 1)} µJ)`;
     }
     if (joules < 1e3) {
-        return `${formatNumber(joules, 2)} J (${formatNumber(valMeV, 1)} MeV)`;
+        return `${evText} (${formatNumber(joules, 2)} J)`;
     }
     if (joules < 1e6) {
-        return `${formatNumber(joules / 1e3, 2)} kJ`;
+        return `${evText} (${formatNumber(joules / 1e3, 2)} kJ)`;
     }
     if (joules < 1e9) {
-        return `${formatNumber(joules / 1e6, 2)} MJ`;
+        return `${evText} (${formatNumber(joules / 1e6, 2)} MJ)`;
     }
     if (joules < 1e12) {
-        return `${formatNumber(joules / 1e9, 2)} GJ`;
+        return `${evText} (${formatNumber(joules / 1e9, 2)} GJ)`;
     }
-    return `${formatNumber(joules / 1e12, 2)} TJ`;
+    return `${evText} (${formatNumber(joules / 1e12, 2)} TJ)`;
 }
 
 // 電力フォーマッター (W, kW, MW, GW)
