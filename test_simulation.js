@@ -202,6 +202,48 @@ assert(actualHRate === expectedHRate, `軽水素自動生産レート正常確�
 // 1秒間の自動生産
 const prevH = state.hydrogen;
 autoSys.update(1.0);
+assert(Math.round(state.hydrogen - prevH) === expectedHRate, '軽水素自動大量生産確認');
+
+console.log('--- 10b. 自動同位体分子ビーム結晶機 (トリチウム単独生成) テスト ---');
+// 海水重水素生産施設等を一時退避して結晶機単体の挙動を検証
+const savedGS = state.buildings['deuterium_extractor_gs'] || 0;
+const savedCryo = state.buildings['deuterium_distillery_cryo'] || 0;
+const savedFloat = state.buildings['deuterium_megafloat'] || 0;
+state.buildings['deuterium_extractor_gs'] = 0;
+state.buildings['deuterium_distillery_cryo'] = 0;
+state.buildings['deuterium_megafloat'] = 0;
+
+state.buildings['auto_isotope_assembler'] = 1;
+state.protons = 5;
+state.electrons = 5;
+state.neutrons = 10;
+state.deuterium = 0;
+state.tritium = 0;
+
+// 1秒間稼働 (craftsPerSec = 0.8)
+autoSys.update(1.0);
+assert(state.deuterium === 0, '重水素(²H)は生成されない (0のまま)');
+assert(Math.abs(state.tritium - 0.8) < 1e-5, '三重水素(³H)のみが生成される (+0.8 ³H)');
+assert(Math.abs(state.protons - 4.2) < 1e-5, '陽子が正常に消費される (5 - 0.8 = 4.2)');
+assert(Math.abs(state.neutrons - 8.4) < 1e-5, '中性子が2倍消費される (10 - 1.6 = 8.4)');
+assert(Math.abs(state.electrons - 4.2) < 1e-5, '電子が正常に消費される (5 - 0.8 = 4.2)');
+
+// 中性子が1個だけの場合 (重水素の素材はあるが、三重水素の素材中性子>=2が不足)
+state.protons = 5;
+state.electrons = 5;
+state.neutrons = 1;
+state.deuterium = 0;
+const prevTr = state.tritium;
+autoSys.update(1.0);
+assert(state.deuterium === 0, '中性子1個でも重水素(²H)は生成されない');
+assert(state.tritium === prevTr, '中性子不足時は三重水素(³H)も生成されない');
+assert(state.protons === 5 && state.neutrons === 1 && state.electrons === 5, '素材が誤って消費されない');
+
+// 施設数を復元
+state.buildings['deuterium_extractor_gs'] = savedGS;
+state.buildings['deuterium_distillery_cryo'] = savedCryo;
+state.buildings['deuterium_megafloat'] = savedFloat;
+
 console.log('--- 11. エネルギー単位フォーマッター テスト ---');
 assert(formatElectronVolt(500) === '500 MeV', '500 MeV 表記確認');
 assert(formatElectronVolt(1000) === '1.00 GeV', '1000 MeV -> 1.00 GeV 表記確認 (k MeV ではない)');
@@ -247,6 +289,52 @@ const midBuildingIds = midBuildings.map(b => b.id);
 assert(midBuildingIds.includes('breeding_blanket'), '1000MeV獲得時: リチウム増殖ブランケット解放');
 assert(midBuildingIds.includes('auto_isotope_assembler'), '1000MeV獲得時: 自動同位体分子ビーム結晶機解放');
 
-console.log('\n🎉 ALL TESTS PASSED SUCCESSFULLY! ゲームロジック・拡大再生産サイクル・水素/重水素/リチウム大量生産・プログレッションは完全に正常です。');
+console.log('--- 13. Q値・核融合熱出力(MW)・臨界プラズマ条件 (Q ≧ 1) テスト ---');
+// A. 初期手動点火 (アップグレードなし)
+state.reset(false);
+state.deuterium = 1;
+state.tritium = 1;
+fusionSys.injectFuel(1, 1);
+fusionSys.triggerManualIgnition();
+assert(state.reactor.fusionPowerMW > 0, `核融合出力が正の値 (${state.reactor.fusionPowerMW.toFixed(2)} MW)`);
+assert(state.reactor.qValue < 1.0, `初回手動点火では Q < 1.0 (${state.reactor.qValue.toFixed(2)})`);
+assert(state.achievements['ach_breakeven'] !== true, '初期手動点火で臨界実績は解除されない');
+
+// B. 臨界構成 (HTS 4基, NBI 3基, ペレット 2基)
+state.buildings['superconducting_magnet'] = 4;
+state.buildings['nbi_heater'] = 3;
+state.buildings['pellet_injector'] = 2;
+state.reactor.continuousInjection = true;
+
+// パラメータ更新（NBI外部加熱による昇温を反映）
+for (let i = 0; i < 30; i++) {
+    fusionSys.update(1 / 60);
+}
+const tp = fusionSys.getTripleProduct();
+assert(tp >= PHYSICS.LAWSON_BREAKEVEN, `ローソン三重積が臨界目安 (0.6e21) を突破 (${(tp / 1e21).toFixed(3)}e21)`);
+
+// 燃料を十分持たせて自動連続燃焼シミュレーション
+state.deuterium = 100;
+state.tritium = 100;
+for (let i = 0; i < 180; i++) { // 3秒間 (180フレーム)
+    fusionSys.update(1 / 60);
+    autoSys.update(1 / 60);
+}
+
+assert(state.stats.maxQ >= 1.0, `連続燃焼により maxQ ≧ 1.0 を達成 (${state.stats.maxQ.toFixed(2)})`);
+assert(state.achievements['ach_breakeven'] === true, '実績「臨界プラズマ条件 (Q ≧ 1)」が正常にアンロック');
+
+// C. 自律燃焼プラズマ構成 (研究「自己加熱燃焼プラズマ自律制御」習得時)
+state.unlockedTechs['res_burning_plasma'] = true;
+state.buildings['superconducting_magnet'] = 6;
+state.deuterium = 200;
+state.tritium = 200;
+for (let i = 0; i < 300; i++) { // 5秒間
+    fusionSys.update(1 / 60);
+    autoSys.update(1 / 60);
+}
+assert(state.stats.maxQ >= 5.0, `燃焼プラズマ自律制御により maxQ ≧ 5.0 を達成 (${state.stats.maxQ.toFixed(2)})`);
+
+console.log('\n🎉 ALL TESTS PASSED SUCCESSFULLY! ゲームロジック・拡大再生産・Q値物理スケール・臨界達成は完全に正常です。');
 
 

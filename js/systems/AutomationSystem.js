@@ -124,30 +124,23 @@ export class AutomationSystem {
             }
         }
 
-        // 3. 自動同位体結晶機の稼働
+        // 3. 自動同位体結晶機の稼働 (重水素は海水生産施設があるため、三重水素(³H)のみを自動結晶化)
         const assemblers = this.state.buildings['auto_isotope_assembler'] || 0;
         if (assemblers > 0) {
             const craftsPerSec = assemblers * 0.8;
             const toCraft = craftsPerSec * dt;
 
-            // 三重水素と重水素の自動組み立て
+            // 三重水素（³H）の自動組み立て (1p + 2n + 1e-)
             if (this.state.protons >= 1 && this.state.electrons >= 1 && this.state.neutrons >= 2) {
-                const amt = Math.min(toCraft, Math.floor(this.state.neutrons / 2));
-                this.state.protons -= amt;
-                this.state.neutrons -= amt * 2;
-                this.state.electrons -= amt;
-                this.state.tritium += amt;
-                if (amt > 0 && Math.random() < 0.25 && this.particleSystem?.chamber) {
-                    this.particleSystem.chamber.createSynthesisEffect('自動結晶化: 三重水素 ³H', '#f72585');
-                }
-            } else if (this.state.protons >= 1 && this.state.electrons >= 1 && this.state.neutrons >= 1) {
-                const amt = Math.min(toCraft, this.state.neutrons);
-                this.state.protons -= amt;
-                this.state.neutrons -= amt;
-                this.state.electrons -= amt;
-                this.state.deuterium += amt;
-                if (amt > 0 && Math.random() < 0.25 && this.particleSystem?.chamber) {
-                    this.particleSystem.chamber.createSynthesisEffect('自動結晶化: 重水素 ²H', '#06d6a0');
+                const amt = Math.min(toCraft, this.state.protons, this.state.electrons, this.state.neutrons / 2);
+                if (amt > 0) {
+                    this.state.protons -= amt;
+                    this.state.neutrons -= amt * 2;
+                    this.state.electrons -= amt;
+                    this.state.tritium += amt;
+                    if (Math.random() < 0.25 && this.particleSystem?.chamber) {
+                        this.particleSystem.chamber.createSynthesisEffect('自動結晶化: 三重水素 ³H', '#f72585');
+                    }
                 }
             }
         }

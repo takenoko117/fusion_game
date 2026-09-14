@@ -652,18 +652,35 @@
 .math-block {
     background: #04070d;
     border-left: 3px solid var(--c-tritium);
-    padding: 8px 12px;
-    margin: 10px 0;
-    font-family: var(--font-mono);
+    padding: 10px 16px;
+    margin: 12px 0;
     color: #fff;
-    font-size: 13px;
     overflow-x: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.math-block .katex-display {
+    margin: 0;
+    font-size: 1.15em;
 }
 
 .math-inline {
-    background: rgba(255, 255, 255, 0.08);
-    padding: 1px 5px;
+    display: inline-block;
+    vertical-align: middle;
+    padding: 0 4px;
     border-radius: 3px;
-    font-family: var(--font-mono);
+    background: rgba(0, 245, 212, 0.05);
+    font-size: 1.05em;
     color: #ffd166;
+}
+
+.math-inline .katex {
+    color: #ffd166;
+}
+
+.math-fallback {
+    font-family: 'KaTeX_Main', 'Cambria Math', 'Times New Roman', serif;
+    letter-spacing: 0.02em;
 }

@@ -5,6 +5,7 @@
  */
 
 import { CODEX_ENTRIES } from '../constants.js';
+import { formatMarkdownWithMath } from './mathRenderer.js';
 
 export class CodexModal {
     constructor(modalElement) {
@@ -99,17 +100,7 @@ export class CodexModal {
     }
 
     _formatMarkdown(md) {
-        return md
-            .trim()
-            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/\$\$(.*?)\$\$/g, '<div class="math-block">$1</div>')
-            .replace(/\$(.*?)\$/g, '<code class="math-inline">$1</code>')
-            .replace(/^\- (.*$)/gim, '<li>$1</li>')
-            .replace(/<\/li>\n<li>/g, '</li><li>')
-            .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-            .replace(/\n\n/g, '<p></p>');
+        return formatMarkdownWithMath(md);
     }
 
     _getDiagramForEntry(id) {

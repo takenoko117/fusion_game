@@ -4,6 +4,8 @@
  * 初動から自律増殖ループ、ローソン条件達成、Q値10超えの燃焼プラズマまでを徹底ガイド
  */
 
+import { formatMarkdownWithMath } from './mathRenderer.js';
+
 export const GUIDE_SECTIONS = [
     {
         id: 'roadmap',
@@ -32,7 +34,7 @@ export const GUIDE_SECTIONS = [
    - 獲得したエネルギーで、右カラムの施設「**アップクォーク真空抽出機**」「**ダウンクォーク真空抽出機**」「**熱陰極レプトン電子銃**」を建設。
    - 素粒子が毎秒自動的に湧き出すようになります。
 2. **合成ラインの自動化**:
-   - 「**自動ハドロン結合炉**」と「**自動同位体結晶機**」を順次建設。手動クリックの手間が激減します。
+   - 「**自動ハドロン結合炉**」（陽子・中性子）と「**自動同位体結晶機**」（三重水素 ³H 専用）を順次建設。手動クリックの手間が激減します（※重水素 ²H は後の海水プラント等で大量生産可能）。
    - また、上部の「**全合成**」ボタンを押せば、手持ちの素粒子から重水素・三重水素が一瞬で $O(1)$ 最適合成されます。
 3. ★**ゲーム最大の最重要転換点: リチウム増殖ブランケットの建設**★:
    - 「**リチウム増殖ブランケット**」を配備します。
@@ -91,6 +93,11 @@ export const GUIDE_SECTIONS = [
 
 #### 1. Q値（エネルギー増倍率）の計算式
 $$Q = \\frac{P_{\\text{fusion}} \\text{ (核融合熱出力)}}{P_{\\text{heat}} \\text{ (外部加熱入力)}}$$
+
+- **核融合熱出力 ($P_{\\text{fusion}}$)**:
+  ゲーム内の燃料1単位は、核融合工学における**極低温微小ペレットパケット ($2.0 \\times 10^{17}$ 個の核子 / 約0.83マイクログラム)** に相当します。毎秒1個のD-T燃焼で約 **$0.564\\text{ MW}$** の熱出力を生み出します。
+- **外部加熱入力 ($P_{\\text{heat}}$)**:
+  初期状態のオーム加熱 $1.0\\text{ MW}$ に加え、NBI加熱装置1基につき $+5.0\\text{ MW}$ が注入されます。
 
 Q値を上げるには、**「分子（核融合熱出力）を極大化する」** か **「分母（外部加熱電力）を削る」** の2つしかありません。
 
@@ -274,18 +281,6 @@ export class GuideModal {
     }
 
     _formatMarkdown(md) {
-        return md
-            .trim()
-            .replace(/^#### (.*$)/gim, '<h4 style="color: var(--c-energy); margin: 16px 0 6px 0; font-size: 14px;">$1</h4>')
-            .replace(/^### (.*$)/gim, '<h3 style="color: var(--c-plasma); margin: 14px 0 8px 0; font-size: 16px;">$1</h3>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/\$\$(.*?)\$\$/g, '<div class="math-block">$1</div>')
-            .replace(/\$(.*?)\$/g, '<code class="math-inline">$1</code>')
-            .replace(/^\- \[ \] (.*$)/gim, '<li style="list-style: none; margin: 6px 0;"><label style="cursor: pointer;"><input type="checkbox" style="margin-right: 8px;">$1</label></li>')
-            .replace(/^\- (.*$)/gim, '<li>$1</li>')
-            .replace(/<\/li>\n<li>/g, '</li><li>')
-            .replace(/(<li>.*<\/li>)/s, '<ul style="margin-left: 20px; margin-bottom: 12px;">$1</ul>')
-            .replace(/\n\n/g, '<p style="margin-bottom: 8px;"></p>');
+        return formatMarkdownWithMath(md);
     }
 }

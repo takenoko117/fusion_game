@@ -76,9 +76,11 @@ export class FusionSystem {
             reactor.qValue = 0;
         }
 
-        // プラズマ冷却（熱伝導・放射損失による自然冷却）
+        // プラズマ加熱・冷却（NBI外部加熱による昇温と熱伝導放射による冷却）
         const baseTemp = 1.0 + (this.state.buildings['nbi_heater'] || 0) * 2.0;
-        if (reactor.temperatureKeV > baseTemp) {
+        if (reactor.temperatureKeV < baseTemp) {
+            reactor.temperatureKeV = Math.min(baseTemp, reactor.temperatureKeV + 20.0 * dt);
+        } else if (reactor.temperatureKeV > baseTemp) {
             const coolingRate = 0.15 / Math.max(0.2, reactor.confinementTime);
             reactor.temperatureKeV = Math.max(baseTemp, reactor.temperatureKeV - coolingRate * dt);
         }
@@ -222,8 +224,8 @@ export class FusionSystem {
         // 3. 発熱出力とQ値の計算
         const totalFusions = dtFusions + ttFusions;
         if (totalFusions > 0) {
-            // MW換算 (指数移動平均で滑らかに表示)
-            const instantPower = (totalEnergyProducedInStep / dt) * PHYSICS.MEV_TO_JOULE * 1e-6 * 1000;
+            // MW換算 (微小ペレットパケットスケールを適用しマクロ熱出力MWへ換算)
+            const instantPower = (totalEnergyProducedInStep / dt) * PHYSICS.MEV_TO_JOULE * 1e-6 * PHYSICS.MACRO_PACKET_SCALE;
             r.fusionPowerMW = r.fusionPowerMW > 0 ? (r.fusionPowerMW * 0.75 + instantPower * 0.25) : instantPower;
             r.qValue = r.heatingPowerMW > 0 ? (r.fusionPowerMW / r.heatingPowerMW) : 0;
             if (r.qValue > this.state.stats.maxQ) {

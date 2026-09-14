@@ -25,6 +25,9 @@ export const PHYSICS = {
     },
     // 1 MeV = 1.60218e-13 J
     MEV_TO_JOULE: 1.60218e-13,
+    // マクロ燃料ペレット換算係数 (1ゲーム燃料単位 = 2.0e17個の核子 / 約0.83マイクログラムの微小ペレット)
+    // 1反応/秒 (17.59 MeV/s) ≒ 0.564 MW のマクロ熱出力に相当
+    MACRO_PACKET_SCALE: 2.0e17,
     // ローソン条件の基準値 (n * T * tau_E >= 3.0e21 keV * s / m^3 で自己点火)
     LAWSON_IGNITION: 3.0e21,
     LAWSON_BREAKEVEN: 0.6e21, // Q=1の目安
@@ -164,12 +167,12 @@ export const BUILDINGS = [
     {
         id: 'auto_isotope_assembler',
         name: '自動同位体分子ビーム結晶機',
-        desc: '核子と電子を整列させて水素同位体を自動合成。【合成仕様】中性子2個以上で三重水素(³H)を優先合成、1個なら重水素(²H)を自動合成します。',
+        desc: '核子と電子を高精度に整列させ、希少な三重水素(³H)を専門に自動結晶化します。（重水素は海水抽出施設等で生産されるため、³Hのみに特化）',
         category: 'synthesis',
         cost: { energy: 200 },
         costMultiplier: 1.22,
         productionAtomRate: 1,
-        effectDesc: '重水素(²H) または 三重水素(³H) 最大0.8個/秒 (中性子2個以上で³H優先)',
+        effectDesc: '三重水素(³H) 自動結晶化 最大0.8個/秒 (p:1, e:1, n:2 消費)',
         unlockEnergy: 100,
         icon: '🧬',
     },
