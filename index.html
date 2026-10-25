@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FUSION GENESIS: 核融合 拡大再生産シミュレーター</title>
+    <title>FUSION GENESIS v2.0 — 核融合 拡大再生産シミュレーター</title>
+    <!-- Google Fonts: SF HUD & Monospace Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700;800&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
     <!-- KaTeX: LaTeX 数式描画エンジン -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -11,97 +15,138 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/animations.css">
 </head>
-<body>
+<body data-reactor-tier="cold">
+
+    <!-- 背景アンビエント・ホログラムグリッド装飾 -->
+    <div class="ambient-bg-layer" aria-hidden="true"></div>
 
     <!-- ヘッダー -->
     <header class="app-header">
         <div class="brand-area">
-            <span class="brand-logo">⚛️</span>
+            <div class="brand-emblem">
+                <span class="brand-logo">⚛️</span>
+                <span class="brand-orbit-ring"></span>
+            </div>
             <div>
-                <div class="brand-title">FUSION GENESIS</div>
-                <div class="brand-subtitle">核融合 拡大再生産シミュレーター</div>
+                <div class="brand-title-row">
+                    <span class="brand-title">FUSION GENESIS</span>
+                    <span class="version-badge">v2.0 HYPER-TORUS</span>
+                </div>
+                <div class="brand-subtitle">QUANTUM &amp; TOKAMAK FUSION CONTROL SYSTEM</div>
+            </div>
+            <div class="reactor-status-pill" id="reactorStatusBadge" title="現在の炉心プラズマ稼働フェーズ">
+                <span class="status-dot" id="reactorStatusDot"></span>
+                <span id="reactorStatusText">COLD STANDBY</span>
             </div>
         </div>
+
         <div class="header-actions">
-            <button class="btn btn-small" id="speedBtn" title="ゲーム速度変更">速度: <span id="speedVal">1x</span></button>
-            <button class="btn btn-small" id="pauseBtn" title="一時停止">⏸️</button>
-            <button class="btn btn-small" id="soundBtn" title="音声切替">🔊 音声: ON</button>
+            <button class="btn btn-small btn-glass" id="speedBtn" title="シミュレーション速度変更">⏱️ 速度: <span id="speedVal">1x</span></button>
+            <button class="btn btn-small btn-glass" id="pauseBtn" title="一時停止 / 再開">⏸️</button>
+            <button class="btn btn-small btn-glass" id="soundBtn" title="プロシージャルSF音響切替">🔊 音声: ON</button>
             <button class="btn btn-small btn-action" id="guideBtn">📖 攻略手順書</button>
             <button class="btn btn-small btn-primary" id="codexBtn">📚 核融合図鑑 (Codex)</button>
-            <button class="btn btn-small" id="achievementsBtn">🏆 実績</button>
-            <button class="btn btn-small" id="saveBtn" title="セーブ">💾 保存</button>
-            <button class="btn btn-small" id="resetBtn" title="リセット">🔄 リセット</button>
+            <button class="btn btn-small btn-glass" id="achievementsBtn">🏆 実績 <span id="achCountBadge" class="mini-counter">0/9</span></button>
+            <button class="btn btn-small btn-glass" id="saveBtn" title="ローカルストレージへ保存">💾 保存</button>
+            <button class="btn btn-small btn-danger-subtle" id="resetBtn" title="データ初期化">🔄</button>
         </div>
     </header>
 
-    <!-- リソースステータスバー -->
+    <!-- リソース・テレメトリ・ステータスバー -->
     <section class="resource-bar">
+        <!-- フェーズ・ミッションナビゲーションポッド -->
+        <div class="mission-pod" id="missionPod" title="現在の推奨攻略ステップ（クリックで攻略手順書を表示）">
+            <div class="mission-pod-top">
+                <span class="mission-phase-tag" id="missionPhaseTag">PHASE 1/5</span>
+                <span class="mission-title" id="missionTitle">陽子・中性子の合成</span>
+            </div>
+            <div class="mission-desc" id="missionDesc">u, d クォークを射出し、陽子(p)または中性子(n)を合成してください</div>
+            <div class="mission-mini-bar">
+                <div class="mission-mini-fill" id="missionProgressFill" style="width: 10%;"></div>
+            </div>
+        </div>
+
         <!-- エネルギー -->
         <div class="res-item energy-main" id="resGroupEnergy" title="核融合反応や増殖ブランケットで回収された利用可能エネルギー">
             <span class="res-icon">⚡</span>
-            <span>エネルギー:</span>
-            <span class="res-val" id="resEnergy">0 MeV</span>
+            <div class="res-stack">
+                <span class="res-label">CORE ENERGY</span>
+                <span class="res-val" id="resEnergy">0 MeV</span>
+            </div>
         </div>
 
         <!-- クォーク・レプトン -->
         <div class="res-group" id="resGroupQuarks">
+            <span class="group-tag">QUARKS</span>
             <div class="res-item" title="アップクォーク (電荷 +2/3, 質量 2.2 MeV)">
-                <span style="color: var(--c-quark-up); font-weight: bold;">u:</span>
+                <span class="res-dot" style="background: var(--c-quark-up);"></span>
+                <span style="color: var(--c-quark-up); font-weight: 700;">u:</span>
                 <span class="res-val" id="resUp">0</span>
+                <span class="res-rate" id="resUpRate"></span>
             </div>
             <div class="res-item" title="ダウンクォーク (電荷 -1/3, 質量 4.7 MeV)">
-                <span style="color: var(--c-quark-down); font-weight: bold;">d:</span>
+                <span class="res-dot" style="background: var(--c-quark-down);"></span>
+                <span style="color: var(--c-quark-down); font-weight: 700;">d:</span>
                 <span class="res-val" id="resDown">0</span>
+                <span class="res-rate" id="resDownRate"></span>
             </div>
             <div class="res-item" title="電子 (レプトン, 電荷 -1, 質量 0.511 MeV)">
-                <span style="color: var(--c-lepton); font-weight: bold;">e⁻:</span>
+                <span class="res-dot" style="background: var(--c-lepton);"></span>
+                <span style="color: var(--c-lepton); font-weight: 700;">e⁻:</span>
                 <span class="res-val" id="resElectron">0</span>
+                <span class="res-rate" id="resElectronRate"></span>
             </div>
         </div>
 
         <!-- ハドロン (核子) -->
         <div class="res-group" id="resGroupHadrons">
+            <span class="group-tag">NUCLEONS</span>
             <div class="res-item" title="陽子 (uud, 電荷 +1)">
-                <span style="color: var(--c-proton); font-weight: bold;">陽子 p:</span>
+                <span class="res-dot" style="background: var(--c-proton);"></span>
+                <span style="color: var(--c-proton); font-weight: 700;">陽子 p:</span>
                 <span class="res-val" id="resProton">0</span>
             </div>
             <div class="res-item" title="中性子 (udd, 電荷 0)">
-                <span style="color: var(--c-neutron); font-weight: bold;">中性子 n:</span>
+                <span class="res-dot" style="background: var(--c-neutron);"></span>
+                <span style="color: var(--c-neutron); font-weight: 700;">中性子 n:</span>
                 <span class="res-val" id="resNeutron">0</span>
             </div>
         </div>
 
         <!-- 水素同位体 (原料・燃料) -->
         <div class="res-group" id="resGroupIsotopes">
+            <span class="group-tag">ISOTOPES</span>
             <div class="res-item" title="軽水素 (¹H = 1p + 1e⁻) - 純水電解・光触媒・熱プラズマ分解プラントから自動供給可能">
-                <span style="color: var(--c-hydrogen); font-weight: bold;">軽水素 ¹H:</span>
+                <span style="color: var(--c-hydrogen); font-weight: 700;">軽水素 ¹H:</span>
                 <span class="res-val" id="resHydrogen">0</span>
-                <span id="resHydrogenRate" style="font-size: 10px; color: var(--c-hydrogen); font-family: var(--font-mono); margin-left: 2px;"></span>
+                <span class="res-rate" id="resHydrogenRate" style="color: var(--c-hydrogen);"></span>
             </div>
             <div class="res-item" title="重水素 ²H (D) = 1p + 1n + 1e⁻ - 海水抽出設備から自動供給可能">
-                <span style="color: var(--c-deuterium); font-weight: bold;">重水素 ²H:</span>
+                <span style="color: var(--c-deuterium); font-weight: 700;">重水素 ²H:</span>
                 <span class="res-val" id="resDeuterium">0</span>
-                <span id="resDeuteriumRate" style="font-size: 10px; color: var(--c-deuterium); font-family: var(--font-mono); margin-left: 2px;"></span>
+                <span class="res-rate" id="resDeuteriumRate" style="color: var(--c-deuterium);"></span>
             </div>
             <div class="res-item" title="三重水素 ³H (T) = 1p + 2n + 1e⁻">
-                <span style="color: var(--c-tritium); font-weight: bold;">三重水素 ³H:</span>
+                <span style="color: var(--c-tritium); font-weight: 700;">三重水素 ³H:</span>
                 <span class="res-val" id="resTritium">0</span>
             </div>
         </div>
 
         <!-- 生成物 & 増殖用リチウム -->
         <div class="res-group" id="resGroupProducts">
+            <span class="group-tag">BREEDING</span>
             <div class="res-item" title="ヘリウム-4 (核融合反応の生成物)">
-                <span style="color: var(--c-helium); font-weight: bold;">⁴He:</span>
+                <span style="color: #c77dff; font-weight: 700;">⁴He:</span>
                 <span class="res-val" id="resHelium">0</span>
             </div>
             <div class="res-item" title="高速中性子 (14.1 MeV) - リチウムブランケットで吸収してトリチウムを増殖可能">
-                <span style="color: #fff; font-weight: bold;">高速n:</span>
+                <span style="color: #fff; font-weight: 700;">高速n:</span>
                 <span class="res-val" id="resFastNeutron">0</span>
             </div>
             <div class="res-item" title="リチウム-6 (増殖ブランケット用燃料)">
-                <span style="color: var(--c-plasma); font-weight: bold;">⁶Li備蓄:</span>
+                <span style="color: var(--c-plasma); font-weight: 700;">⁶Li備蓄:</span>
                 <span class="res-val" id="resLithium6">50</span>
+                <span class="res-rate" id="resLithiumRateTop" style="color: var(--c-plasma);"></span>
             </div>
         </div>
     </section>
@@ -112,62 +157,84 @@
         <!-- 左カラム: 素粒子・同位体合成ラボ -->
         <section class="game-column">
             <div class="column-header">
-                <div class="column-title">🔬 素粒子・同位体合成室</div>
-                <button class="btn btn-small" id="btnQuickCraftAll" title="手持ちの素粒子から自動で同位体を最大合成">全合成</button>
+                <div class="column-title">
+                    <span class="col-icon">🔬</span>
+                    <span>QUANTUM &amp; ISOTOPE LAB</span>
+                </div>
+                <button class="btn btn-small btn-primary" id="btnQuickCraftAll" title="手持ちの素粒子から自動で同位体を最大合成">⚡ 全一括合成</button>
             </div>
 
             <div class="column-body">
                 <!-- 素粒子射出パネル -->
-                <div class="card">
+                <div class="card card-hud">
                     <div class="card-title">
-                        <span>素粒子射出機 (Emitters)</span>
-                        <span style="font-size: 10px; color: var(--text-muted);">クリックで射出</span>
+                        <span>素粒子エミッター (PARTICLE EMITTERS)</span>
+                        <span class="hud-subtag">CLICK / KEY [1-3]</span>
                     </div>
                     <div class="particle-launch-grid">
-                        <button class="btn particle-btn btn-up" id="btnShootUp">
+                        <button class="btn particle-btn btn-up is-selected" id="btnShootUp">
                             <span class="particle-badge">u</span>
-                            <span>アップ (+2/3)</span>
+                            <span class="particle-name">アップ (+2/3)</span>
                         </button>
                         <button class="btn particle-btn btn-down" id="btnShootDown">
                             <span class="particle-badge">d</span>
-                            <span>ダウン (-1/3)</span>
+                            <span class="particle-name">ダウン (-1/3)</span>
                         </button>
                         <button class="btn particle-btn btn-electron" id="btnShootElectron">
                             <span class="particle-badge">e⁻</span>
-                            <span>電子 (-1)</span>
+                            <span class="particle-name">電子 (-1)</span>
                         </button>
                     </div>
-                    <div style="display: flex; gap: 6px; margin-top: 8px;">
-                        <button class="btn btn-small" style="flex:1;" id="btnShootBulkUp">u 10連射</button>
-                        <button class="btn btn-small" style="flex:1;" id="btnShootBulkDown">d 10連射</button>
-                        <button class="btn btn-small" style="flex:1;" id="btnShootBulkElectron">e⁻ 10連射</button>
+                    <div class="bulk-launch-row">
+                        <button class="btn btn-small btn-glass" style="flex:1;" id="btnShootBulkUp">u ×10連射</button>
+                        <button class="btn btn-small btn-glass" style="flex:1;" id="btnShootBulkDown">d ×10連射</button>
+                        <button class="btn btn-small btn-glass" style="flex:1;" id="btnShootBulkElectron">e⁻ ×10連射</button>
                     </div>
                 </div>
 
                 <!-- 素粒子衝突キャンバス -->
-                <div class="canvas-wrapper">
+                <div class="canvas-wrapper hud-frame">
+                    <div class="hud-corner hud-tl"></div>
+                    <div class="hud-corner hud-tr"></div>
+                    <div class="hud-corner hud-bl"></div>
+                    <div class="hud-corner hud-br"></div>
                     <canvas id="particleCanvas"></canvas>
-                    <div class="canvas-hint">💡 画面内クリックでも指定粒子を射出可能。クォークが集まると強い力で陽子・中性子に結合！</div>
+                    <div class="canvas-hint">💡 クリックで粒子射出 / ドラッグ長押しで磁気ピンセット引力</div>
                 </div>
 
                 <!-- ハドロン合成レシピ -->
-                <div class="card">
+                <div class="card card-hud">
                     <div class="card-title">
-                        <span>ハドロン合成 (クォークの結合)</span>
+                        <span>ハドロン合成 (QCD 強い相互作用)</span>
+                        <span class="hud-subtag">BARYON SYNTHESIS</span>
                     </div>
                     <div class="recipe-row">
                         <div class="recipe-info">
-                            <span class="recipe-name" style="color: var(--c-proton);">陽子 (Proton)</span>
-                            <span class="recipe-formula">u + u + d → p (+1)</span>
+                            <div class="recipe-title-line">
+                                <span class="recipe-dot" style="background: var(--c-proton);"></span>
+                                <span class="recipe-name" style="color: var(--c-proton);">陽子 (Proton, p)</span>
+                                <span class="craftable-badge" id="badgeCanCraftProton">合成可: 0</span>
+                            </div>
+                            <span class="recipe-formula">2u + 1d ⟶ p (電荷 +1)</span>
                         </div>
-                        <button class="btn btn-small" id="btnCraftProton">合成 (2u + 1d)</button>
+                        <div class="recipe-actions">
+                            <button class="btn btn-small" id="btnCraftProton">合成 (+1)</button>
+                            <button class="btn btn-small btn-glass" id="btnCraftProtonMax" title="可能な限り陽子を合成">MAX</button>
+                        </div>
                     </div>
                     <div class="recipe-row">
                         <div class="recipe-info">
-                            <span class="recipe-name" style="color: var(--c-neutron);">中性子 (Neutron)</span>
-                            <span class="recipe-formula">u + d + d → n (0)</span>
+                            <div class="recipe-title-line">
+                                <span class="recipe-dot" style="background: var(--c-neutron);"></span>
+                                <span class="recipe-name" style="color: var(--c-neutron);">中性子 (Neutron, n)</span>
+                                <span class="craftable-badge" id="badgeCanCraftNeutron">合成可: 0</span>
+                            </div>
+                            <span class="recipe-formula">1u + 2d ⟶ n (電荷 0)</span>
                         </div>
-                        <button class="btn btn-small" id="btnCraftNeutron">合成 (1u + 2d)</button>
+                        <div class="recipe-actions">
+                            <button class="btn btn-small" id="btnCraftNeutron">合成 (+1)</button>
+                            <button class="btn btn-small btn-glass" id="btnCraftNeutronMax" title="可能な限り中性子を合成">MAX</button>
+                        </div>
                     </div>
                 </div>
 
@@ -182,55 +249,86 @@
                 </div>
 
                 <!-- 水素同位体組み立て (燃料製造) -->
-                <div class="card" id="cardIsotopeCrafting" style="display: none;">
+                <div class="card card-hud" id="cardIsotopeCrafting" style="display: none;">
                     <div class="card-title">
-                        <span>水素同位体組み立て (燃料製造)</span>
+                        <span>水素同位体組み立て (FUEL ASSEMBLY)</span>
+                        <span class="hud-subtag">ISOTOPES</span>
                     </div>
                     <div class="recipe-row">
                         <div class="recipe-info">
-                            <span class="recipe-name" style="color: var(--c-hydrogen);">
-                                軽水素 (¹H) <span id="txtHydrogenRate" style="font-size: 10px; color: var(--c-hydrogen); font-family: var(--font-mono); font-weight: normal;">(+0.0 /秒)</span>
-                            </span>
+                            <div class="recipe-title-line">
+                                <span class="recipe-dot" style="background: var(--c-hydrogen);"></span>
+                                <span class="recipe-name" style="color: var(--c-hydrogen);">
+                                    軽水素 (¹H) <span id="txtHydrogenRate" class="inline-rate">(+0.0 /秒)</span>
+                                </span>
+                            </div>
                             <span class="recipe-formula">1p + 1e⁻ (水電解・プラズマ分解で自動生産可)</span>
                         </div>
-                        <button class="btn btn-small" id="btnCraftHydrogen">結合</button>
+                        <div class="recipe-actions">
+                            <button class="btn btn-small" id="btnCraftHydrogen">結合</button>
+                            <button class="btn btn-small btn-glass" id="btnCraftHydrogenMax">MAX</button>
+                        </div>
                     </div>
                     <div class="recipe-row">
                         <div class="recipe-info">
-                            <span class="recipe-name" style="color: var(--c-deuterium);">
-                                重水素 (²H) <span id="txtDeuteriumRate" style="font-size: 10px; color: var(--c-deuterium); font-family: var(--font-mono); font-weight: normal;">(+0.0 /秒)</span>
-                            </span>
+                            <div class="recipe-title-line">
+                                <span class="recipe-dot" style="background: var(--c-deuterium);"></span>
+                                <span class="recipe-name" style="color: var(--c-deuterium);">
+                                    重水素 (²H) <span id="txtDeuteriumRate" class="inline-rate">(+0.0 /秒)</span>
+                                </span>
+                            </div>
                             <span class="recipe-formula">1p + 1n + 1e⁻ (海水から自動抽出可)</span>
                         </div>
-                        <button class="btn btn-small" id="btnCraftDeuterium">結合</button>
+                        <div class="recipe-actions">
+                            <button class="btn btn-small" id="btnCraftDeuterium">結合</button>
+                            <button class="btn btn-small btn-glass" id="btnCraftDeuteriumMax">MAX</button>
+                        </div>
                     </div>
                     <div class="recipe-row">
                         <div class="recipe-info">
-                            <span class="recipe-name" style="color: var(--c-tritium);">三重水素 (³H)</span>
-                            <span class="recipe-formula">1p + 2n + 1e⁻ (希少・高効率燃料)</span>
+                            <div class="recipe-title-line">
+                                <span class="recipe-dot" style="background: var(--c-tritium);"></span>
+                                <span class="recipe-name" style="color: var(--c-tritium);">三重水素 (³H)</span>
+                            </div>
+                            <span class="recipe-formula">1p + 2n + 1e⁻ (希少・増殖ブランケット燃料)</span>
                         </div>
-                        <button class="btn btn-small" id="btnCraftTritium">結合</button>
+                        <div class="recipe-actions">
+                            <button class="btn btn-small" id="btnCraftTritium">結合</button>
+                            <button class="btn btn-small btn-glass" id="btnCraftTritiumMax">MAX</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- 中央カラム: トカマク核融合炉 -->
-        <section class="game-column">
+        <section class="game-column center-reactor-column">
             <div class="column-header">
-                <div class="column-title">🔥 トカマク型 磁場閉じ込め核融合炉</div>
-                <div style="font-size: 11px; color: var(--text-muted);">
-                    磁場強度: <span id="txtMagField" style="color: #fff; font-family: var(--font-mono);">3.5 T</span>
+                <div class="column-title">
+                    <span class="col-icon">🔥</span>
+                    <span>TOKAMAK MAGNETIC CONFINEMENT REACTOR</span>
+                </div>
+                <div class="reactor-header-controls">
+                    <div class="view-mode-switch">
+                        <button class="view-btn active" id="btnViewTorus" title="3Dレイトレーシング・カットアウェイ俯瞰ビュー">🌐 3D俯瞰</button>
+                        <button class="view-btn" id="btnViewInterior" title="ITER/JET実機風 トカマク炉心内部第1壁カメラ">👁️ 炉心内部</button>
+                        <button class="view-btn" id="btnViewPoloidal" title="3DボリュメトリックD型ポロイダル断面スライス">📐 3D断面</button>
+                        <button class="view-btn active" id="btnToggleOsc" title="リアルタイム波形オシロスコープ表示切替">📈 波形</button>
+                    </div>
+                    <div class="mag-field-badge">
+                        <span>B₀:</span>
+                        <span id="txtMagField" class="mag-val">3.5 T</span>
+                    </div>
                 </div>
             </div>
 
             <div class="column-body">
                 <!-- トカマク炉心 ロックプレースホルダー -->
-                <div id="reactorLockedPlaceholder" class="locked-panel" style="padding: 30px 16px;">
-                    <div class="locked-icon" style="font-size: 32px;">🔒</div>
+                <div id="reactorLockedPlaceholder" class="locked-panel" style="padding: 36px 18px;">
+                    <div class="locked-icon" style="font-size: 36px;">🔒</div>
                     <div class="locked-title">炉心磁場閉じ込めシステム [未起動]</div>
-                    <div style="font-size: 11px; color: var(--text-muted); max-width: 280px; line-height: 1.5;">
-                        クォークから陽子・中性子を結合し、核融合燃料となる「重水素(²H)」を合成して炉心プラズマを起動してください。
+                    <div style="font-size: 11px; color: var(--text-muted); max-width: 310px; line-height: 1.55;">
+                        クォークから陽子・中性子を結合し、核融合燃料となる「重水素(²H)」を合成してトカマク炉心プラズマを起動してください。
                     </div>
                     <div class="locked-req">解除条件: 重水素 (²H) × 1 の合成</div>
                 </div>
@@ -238,29 +336,46 @@
                 <!-- アンロック時 トカマク炉心システム -->
                 <div id="reactorActiveContent" style="display: none; flex-direction: column; gap: 10px; width: 100%;">
                     <!-- トカマク動的キャンバス -->
-                    <div class="reactor-viewport">
+                    <div class="reactor-viewport hud-frame">
+                        <div class="hud-corner hud-tl"></div>
+                        <div class="hud-corner hud-tr"></div>
+                        <div class="hud-corner hud-bl"></div>
+                        <div class="hud-corner hud-br"></div>
                         <canvas id="reactorCanvas"></canvas>
+
+                        <!-- 上部オーバーレイ・テレメトリピル -->
                         <div class="reactor-overlay-stats">
                             <div class="stat-pill">
-                                <span>中心温度:</span>
+                                <span class="pill-label">PLASMA TEMP</span>
                                 <span class="val" id="txtTemperature">1.00 keV (1160万℃)</span>
                             </div>
                             <div class="stat-pill">
-                                <span>核融合出力:</span>
+                                <span class="pill-label">FUSION POWER</span>
                                 <span class="val" id="txtFusionPower">0.00 MW</span>
                             </div>
-                            <div class="stat-pill">
-                                <span>Q値 (増倍率):</span>
+                            <div class="stat-pill q-pill">
+                                <span class="pill-label">Q-FACTOR</span>
                                 <span class="val" id="txtQValue">0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- 下部右オーバーレイ・炉心内燃料バランスインジケータ -->
+                        <div class="reactor-fuel-hud">
+                            <div class="fuel-hud-labels">
+                                <span style="color: var(--c-deuterium);">炉心 ²H: <strong id="hudFuelD">0</strong></span>
+                                <span style="color: var(--c-tritium);">炉心 ³H: <strong id="hudFuelT">0</strong></span>
+                            </div>
+                            <div class="fuel-balance-track" title="D:T 燃料混合比率 (50:50が理想)">
+                                <div class="fuel-balance-d" id="fuelBalanceBarD" style="width: 50%;"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- ローソン3重積 (Triple Product) ゲージ -->
-                    <div class="lawson-gauge-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 12px; font-weight: 600;">核融合三重積 (Lawson Triple Product: n · T · τ_E)</span>
-                            <span id="txtTripleProduct" style="font-family: var(--font-mono); font-size: 11px; color: var(--c-plasma);">0.00 × 10²¹ keV·s/m³</span>
+                    <!-- ローソン3重積 (Triple Product) & 3大パラメータゲージ -->
+                    <div class="lawson-gauge-card card-hud">
+                        <div class="lawson-header-row">
+                            <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.4px;">⚖️ 核融合三重積 (Lawson Triple Product: n · T · τ_E)</span>
+                            <span id="txtTripleProduct" class="lawson-val">0.00 × 10²¹ keV·s/m³</span>
                         </div>
                         <div class="progress-track" title="自己点火条件: 3.0 × 10^21 keV·s/m^3">
                             <div class="progress-fill" id="lawsonProgressFill"></div>
@@ -273,44 +388,63 @@
                             <span>燃焼プラズマ (Q ≧ 5)</span>
                             <span>自己点火 (Ignition)</span>
                         </div>
+
+                        <!-- 3要素ミニテレメトリバー -->
+                        <div class="lawson-subgrid">
+                            <div class="sub-metric">
+                                <span class="sm-label">中心密度 n</span>
+                                <span class="sm-val" id="hudMetricN">0.20 ×10²⁰</span>
+                            </div>
+                            <div class="sub-metric">
+                                <span class="sm-label">イオン温度 T</span>
+                                <span class="sm-val" id="hudMetricT">1.0 keV</span>
+                            </div>
+                            <div class="sub-metric">
+                                <span class="sm-label">閉じ込め時間 τ_E</span>
+                                <span class="sm-val" id="hudMetricTau">0.15 s</span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- 炉心制御コントロール -->
-                    <div class="card">
+                    <div class="card card-hud">
                         <div class="card-title">
-                            <span>炉心プラズマ制御 & 燃料注入</span>
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <label style="font-size: 11px; color: var(--text-secondary); cursor: pointer;">
-                                    <input type="checkbox" id="chkContinuousFuel"> 自動連続注入
-                                </label>
-                            </div>
+                            <span>炉心プラズマ制御 &amp; 燃料注入デッキ</span>
+                            <label class="cyber-toggle">
+                                <input type="checkbox" id="chkContinuousFuel">
+                                <span class="toggle-text">🔄 自動連続注入 (AUTO-FEED)</span>
+                            </label>
                         </div>
 
-                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                            <button class="btn btn-small" style="flex: 1;" id="btnInjectD">
-                                注入: 重水素 ²H (<span id="txtChamberD">0</span>)
+                        <div class="fuel-inject-row">
+                            <button class="btn btn-small btn-fuel-d" style="flex: 1;" id="btnInjectD">
+                                <span>注入: 重水素 ²H</span>
+                                <span class="chamber-count">(炉心内: <span id="txtChamberD">0</span>)</span>
                             </button>
-                            <button class="btn btn-small" style="flex: 1;" id="btnInjectT">
-                                注入: 三重水素 ³H (<span id="txtChamberT">0</span>)
+                            <button class="btn btn-small btn-fuel-t" style="flex: 1;" id="btnInjectT">
+                                <span>注入: 三重水素 ³H</span>
+                                <span class="chamber-count">(炉心内: <span id="txtChamberT">0</span>)</span>
                             </button>
                         </div>
 
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-action" style="flex: 2; padding: 10px;" id="btnIgnitePulse">
-                                ⚡ 磁気パルス圧縮点火 (IGNITE FUSION)
+                            <button class="btn btn-ignite" style="flex: 1;" id="btnIgnitePulse">
+                                <span class="ignite-icon">⚡</span>
+                                <span>磁気パルス圧縮点火 (IGNITE FUSION PULSE)</span>
                             </button>
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 10px; color: var(--text-muted);">
-                            <span>D-T反応: ²H + ³H → ⁴He (3.5 MeV) + n (14.1 MeV) + 17.6 MeV</span>
-                            <a href="javascript:void(0)" id="linkOpenGuideFromReactor" style="color: var(--c-plasma); font-weight: bold; text-decoration: underline; cursor: pointer;">📖 Q値向上の攻略手順</a>
+                        <div class="reactor-footer-hint">
+                            <span>D-T反応: ²H + ³H ⟶ ⁴He (3.5 MeV) + n (14.1 MeV) + 17.6 MeV</span>
+                            <a href="javascript:void(0)" id="linkOpenGuideFromReactor" class="guide-link">📖 Q値向上の攻略手順</a>
                         </div>
                     </div>
                 </div>
 
                 <!-- システム動作ログコンソール (常時表示) -->
-                <div class="card">
+                <div class="card card-hud">
                     <div class="card-title">
-                        <span>システム稼働ログ</span>
+                        <span>📟 SYSTEM TELEMETRY LOG</span>
+                        <span class="hud-subtag">REAL-TIME EVENT STREAM</span>
                     </div>
                     <div class="log-console" id="logConsole"></div>
                 </div>
@@ -329,10 +463,10 @@
 
             <div class="column-body">
                 <!-- 拡大再生産 ロックプレースホルダー -->
-                <div id="expansionLockedPlaceholder" class="locked-panel" style="padding: 30px 16px;">
-                    <div class="locked-icon" style="font-size: 32px;">🔒</div>
-                    <div class="locked-title">拡大再生産 & 研究開発 [未認可]</div>
-                    <div style="font-size: 11px; color: var(--text-muted); max-width: 280px; line-height: 1.5;">
+                <div id="expansionLockedPlaceholder" class="locked-panel" style="padding: 36px 18px;">
+                    <div class="locked-icon" style="font-size: 36px;">🔒</div>
+                    <div class="locked-title">拡大再生産 &amp; 研究開発 [未認可]</div>
+                    <div style="font-size: 11px; color: var(--text-muted); max-width: 300px; line-height: 1.55;">
                         トカマク炉心に重水素(²H)と三重水素(³H)を注入し、初めての核融合点火に成功してエネルギーを獲得すると拡大再生産施設が認可されます。
                     </div>
                     <div class="locked-req">解除条件: 初回核融合点火 (エネルギー獲得)</div>
@@ -342,20 +476,35 @@
                 <div id="expansionActiveContent" style="display: none; width: 100%;">
                     <!-- タブ1: 施設一覧 -->
                     <div id="tabBuildingsContent">
+                        <!-- カテゴリフィルタ & 一括購入マルチプライヤバー -->
+                        <div class="expansion-toolbar">
+                            <div class="cat-filter-group" id="buildingFilterGroup">
+                                <button class="filter-pill active" data-cat="all">すべて</button>
+                                <button class="filter-pill" data-cat="particle">⚛️ 素粒子・合成</button>
+                                <button class="filter-pill" data-cat="fusion">🔥 炉心・加熱</button>
+                                <button class="filter-pill" data-cat="resource">🌊 燃料・増殖</button>
+                            </div>
+                            <div class="buy-mult-group" id="buyMultGroup" title="施設の同時購入数">
+                                <button class="mult-pill active" data-mult="1">×1</button>
+                                <button class="mult-pill" data-mult="10">×10</button>
+                                <button class="mult-pill" data-mult="max">MAX</button>
+                            </div>
+                        </div>
+
                         <!-- リチウム補充クイックバー -->
-                        <div class="card" id="lithiumQuickBar" style="margin-bottom: 8px;">
+                        <div class="card card-hud lithium-quick-card" id="lithiumQuickBar" style="margin-bottom: 10px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                                 <div>
                                     <div style="font-size: 12px; font-weight: 700; color: var(--c-plasma);">
-                                        リチウム-6 増殖燃料備蓄: <span id="txtLithiumRate" style="font-size: 11px; color: var(--c-deuterium); font-family: var(--font-mono);">(+0.0 /秒)</span>
+                                        🛡️ リチウム-6 増殖燃料備蓄: <span id="txtLithiumRate" style="font-size: 11px; color: var(--c-deuterium); font-family: var(--font-mono);">(+0.0 /秒)</span>
                                     </div>
-                                    <div style="font-size: 10px; color: var(--text-muted);">増殖ブランケットの燃料。自動生産設備で毎秒補給！</div>
+                                    <div style="font-size: 10px; color: var(--text-muted);">増殖ブランケットの原料。自動抽出プラントまたは下記ボタンで緊急補給</div>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 6px;">
-                                <button class="btn btn-small" style="flex: 1;" id="btnBuyLithium20">+20 Li (100 MeV)</button>
-                                <button class="btn btn-small" style="flex: 1;" id="btnBuyLithium100">+100 Li (500 MeV)</button>
-                                <button class="btn btn-small" style="flex: 1;" id="btnBuyLithium1000">+1,000 Li (5,000 MeV)</button>
+                                <button class="btn btn-small btn-glass" style="flex: 1;" id="btnBuyLithium20">+20 Li (100 MeV)</button>
+                                <button class="btn btn-small btn-glass" style="flex: 1;" id="btnBuyLithium100">+100 Li (500 MeV)</button>
+                                <button class="btn btn-small btn-glass" style="flex: 1;" id="btnBuyLithium1000">+1,000 Li (5 GeV)</button>
                             </div>
                         </div>
 
@@ -374,17 +523,39 @@
 
                     <!-- タブ3: 統計情報 -->
                     <div id="tabStatsContent" style="display: none;">
-                        <div class="card">
-                            <div class="card-title">核融合炉 総合運用実績</div>
-                            <div style="font-family: var(--font-mono); font-size: 12px; display: flex; flex-direction: column; gap: 8px;">
-                                <div>総核融合反応回数: <span id="statTotalFusions" style="color: #fff; font-weight: bold;">0</span> 回</div>
-                                <div>累計生成エネルギー: <span id="statTotalEnergy" style="color: var(--c-energy); font-weight: bold;">0 MeV</span></div>
-                                <div>最大達成 Q 値: <span id="statMaxQ" style="color: var(--c-plasma); font-weight: bold;">0.00</span></div>
-                                <div>稼働時間: <span id="statPlayTime" style="color: #fff;">0 秒</span></div>
-                                <div style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px;">
-                                    <div>閉じ込め時間 τ_E: <span id="statTauE">0.15 s</span></div>
-                                    <div>プラズマ中心密度 n: <span id="statDensity">0.20 × 10²⁰ m⁻³</span></div>
-                                    <div>外部加熱入力 P_heat: <span id="statHeatingPower">1.00 MW</span></div>
+                        <div class="card card-hud">
+                            <div class="card-title">
+                                <span>📊 核融合炉 総合運用テレメトリ</span>
+                                <span class="hud-subtag">DIAGNOSTICS</span>
+                            </div>
+                            <div class="stats-grid-v2">
+                                <div class="stat-box">
+                                    <span class="sb-label">総核融合反応回数</span>
+                                    <span class="sb-val" id="statTotalFusions">0</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="sb-label">累計生成エネルギー</span>
+                                    <span class="sb-val" id="statTotalEnergy" style="color: var(--c-energy);">0 MeV</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="sb-label">最大達成 Q 値</span>
+                                    <span class="sb-val" id="statMaxQ" style="color: var(--c-plasma);">0.00</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="sb-label">システム稼働時間</span>
+                                    <span class="sb-val" id="statPlayTime">0 秒</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="sb-label">エネルギー閉じ込め τ_E</span>
+                                    <span class="sb-val" id="statTauE">0.15 s</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="sb-label">プラズマ中心密度 n</span>
+                                    <span class="sb-val" id="statDensity">0.20 × 10²⁰ m⁻³</span>
+                                </div>
+                                <div class="stat-box" style="grid-column: span 2;">
+                                    <span class="sb-label">実効外部加熱入力 P_heat</span>
+                                    <span class="sb-val" id="statHeatingPower">1.00 MW</span>
                                 </div>
                             </div>
                         </div>
@@ -396,26 +567,20 @@
     </main>
 
     <!-- モーダル: 攻略手順書 (Guide) -->
-    <div class="modal-wrapper" id="guideModal">
-        <!-- JS側で GuideModal が動的初期化 -->
-    </div>
+    <div class="modal-wrapper" id="guideModal"></div>
 
     <!-- モーダル: 核融合図鑑 (Codex) -->
-    <div class="modal-wrapper" id="codexModal">
-        <!-- JS側で CodexModal が動的初期化 -->
-    </div>
+    <div class="modal-wrapper" id="codexModal"></div>
 
     <!-- モーダル: 実績 (Achievements) -->
     <div class="modal-wrapper" id="achievementsModal">
         <div class="modal-backdrop"></div>
-        <div class="modal-content" style="width: 600px; height: 70vh;">
+        <div class="modal-content" style="width: 640px; height: 74vh;">
             <div class="modal-header">
-                <h2>🏆 核融合実績 (Achievements)</h2>
+                <h2>🏆 核融合マイルストーン実績 (Achievements)</h2>
                 <button class="modal-close-btn" id="achCloseBtn">✕</button>
             </div>
-            <div class="column-body" id="achievementsList" style="padding: 16px;">
-                <!-- JS側で動的生成 -->
-            </div>
+            <div class="column-body" id="achievementsList" style="padding: 16px;"></div>
         </div>
     </div>
 

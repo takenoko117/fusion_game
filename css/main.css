@@ -1,34 +1,47 @@
 /**
- * main.css
- * 全体レイアウト、ダークSFテーマ、カラーパレット、レスポンシブデザイン
+ * main.css (v2.0 Next-Gen Sci-Fi Holographic Control Room Theme)
+ * 全体レイアウト、グラスモーフィズム、カラーパレット、リアクター状態連動テーマ
  */
 
 :root {
-    --bg-dark: #070b12;
-    --bg-panel: #0d1522;
-    --bg-card: #131f33;
-    --bg-card-hover: #1b2a45;
-    --border-color: #1e3352;
+    --bg-dark: #04070f;
+    --bg-panel: rgba(10, 18, 34, 0.86);
+    --bg-card: rgba(16, 28, 50, 0.72);
+    --bg-card-hover: rgba(24, 42, 74, 0.85);
+    --border-color: rgba(45, 85, 140, 0.42);
+    --border-subtle: rgba(255, 255, 255, 0.07);
     --border-highlight: #3a86ff;
 
-    --text-primary: #e0e6ed;
-    --text-secondary: #8b9bb4;
-    --text-muted: #5c6b84;
+    --text-primary: #eef4fc;
+    --text-secondary: #98abc6;
+    --text-muted: #5d7290;
 
     --c-quark-up: #ff4d6d;
     --c-quark-down: #4cc9f0;
     --c-lepton: #ffd166;
-    --c-proton: #ff0055;
-    --c-neutron: #00b4d8;
+    --c-proton: #ff2a6d;
+    --c-neutron: #00d2ff;
     --c-hydrogen: #90e0ef;
     --c-deuterium: #06d6a0;
-    --c-tritium: #f72585;
-    --c-helium: #7209b7;
+    --c-tritium: #ff2a85;
+    --c-helium: #9d4edd;
     --c-energy: #ffb703;
     --c-plasma: #00f5d4;
 
-    --font-mono: "Fira Code", "JetBrains Mono", Consolas, "Courier New", monospace;
-    --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    --font-display: "Orbitron", "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    --font-sans: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+
+    --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    --glow-plasma: 0 0 16px rgba(0, 245, 212, 0.35);
+}
+
+/* 炉心フェーズに応じたアンビエントアクセント変化 */
+body[data-reactor-tier="critical"] {
+    --border-color: rgba(58, 134, 255, 0.52);
+}
+body[data-reactor-tier="burning"] {
+    --border-color: rgba(0, 245, 212, 0.55);
 }
 
 * {
@@ -40,19 +53,39 @@
 
 body {
     background-color: var(--bg-dark);
+    background-image:
+        radial-gradient(circle at 50% 35%, rgba(16, 45, 90, 0.35) 0%, transparent 65%),
+        radial-gradient(circle at 15% 80%, rgba(247, 37, 133, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 85% 20%, rgba(0, 245, 212, 0.08) 0%, transparent 45%);
     color: var(--text-primary);
     font-family: var(--font-sans);
     height: 100vh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    position: relative;
+}
+
+.ambient-bg-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+        linear-gradient(rgba(58, 134, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(58, 134, 255, 0.03) 1px, transparent 1px);
+    background-size: 36px 36px;
 }
 
 /* ヘッダー */
 .app-header {
-    background: #090e17;
+    position: relative;
+    z-index: 10;
+    background: linear-gradient(180deg, rgba(8, 14, 28, 0.96) 0%, rgba(10, 18, 34, 0.88) 100%);
+    backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-color);
-    padding: 8px 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    padding: 8px 18px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -62,85 +95,272 @@ body {
 .brand-area {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+}
+
+.brand-emblem {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, rgba(0, 245, 212, 0.2), rgba(58, 134, 255, 0.05));
+    border: 1px solid rgba(0, 245, 212, 0.45);
+    border-radius: 50%;
+    box-shadow: 0 0 14px rgba(0, 245, 212, 0.3);
 }
 
 .brand-logo {
-    font-size: 24px;
-    filter: drop-shadow(0 0 8px var(--c-plasma));
+    font-size: 20px;
+    filter: drop-shadow(0 0 6px var(--c-plasma));
 }
 
-.brand-title {
-    font-size: 18px;
-    font-weight: 700;
-    background: linear-gradient(90deg, #00f5d4, #3a86ff, #f72585);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    letter-spacing: 0.5px;
+.brand-orbit-ring {
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 1px dashed rgba(0, 245, 212, 0.5);
+    animation: rotatingField 14s linear infinite;
 }
 
-.brand-subtitle {
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-}
-
-.header-actions {
+.brand-title-row {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-/* リソース上部バー */
+.brand-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #00f5d4 0%, #4cc9f0 45%, #ff2a85 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1.2px;
+}
+
+.version-badge {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--c-plasma);
+    background: rgba(0, 245, 212, 0.12);
+    border: 1px solid rgba(0, 245, 212, 0.4);
+    padding: 1px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+.brand-subtitle {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--text-muted);
+    letter-spacing: 1.4px;
+    margin-top: 1px;
+}
+
+/* 炉心ステータスピル */
+.reactor-status-pill {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-left: 8px;
+    padding: 4px 11px;
+    border-radius: 20px;
+    background: rgba(13, 23, 42, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #5c6b84;
+    box-shadow: 0 0 6px #5c6b84;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.mini-counter {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    background: rgba(0, 245, 212, 0.15);
+    color: var(--c-plasma);
+    padding: 0 5px;
+    border-radius: 8px;
+}
+
+/* リソース・テレメトリ上部バー */
 .resource-bar {
-    background: var(--bg-panel);
+    position: relative;
+    z-index: 9;
+    background: rgba(9, 16, 30, 0.92);
+    backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border-color);
-    padding: 8px 16px;
+    padding: 6px 16px;
     display: flex;
     flex-wrap: wrap;
-    gap: 12px 24px;
+    gap: 8px 14px;
     align-items: center;
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 12px;
     flex-shrink: 0;
+}
+
+/* ミッション・ナビゲーションポッド */
+.mission-pod {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: linear-gradient(135deg, rgba(0, 245, 212, 0.1), rgba(58, 134, 255, 0.1));
+    border: 1px solid rgba(0, 245, 212, 0.4);
+    border-radius: 6px;
+    padding: 4px 10px;
+    min-width: 250px;
+    max-width: 320px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mission-pod:hover {
+    border-color: var(--c-plasma);
+    box-shadow: 0 0 12px rgba(0, 245, 212, 0.25);
+}
+
+.mission-pod-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.mission-phase-tag {
+    font-size: 9px;
+    font-weight: 800;
+    background: var(--c-plasma);
+    color: #040812;
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+.mission-title {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.mission-desc {
+    font-family: var(--font-sans);
+    font-size: 9.5px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mission-mini-bar {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 2px;
+}
+
+.mission-mini-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--c-plasma), #3a86ff);
+    transition: width 0.35s ease;
 }
 
 .res-group {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 3px 7px;
+    border-radius: 6px;
+}
+
+.group-tag {
+    font-size: 8.5px;
+    font-weight: 800;
+    color: var(--text-muted);
+    letter-spacing: 0.8px;
+    padding-right: 4px;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .res-item {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 8px;
-    background: rgba(255, 255, 255, 0.03);
+    gap: 5px;
+    padding: 3px 7px;
+    background: rgba(12, 22, 40, 0.65);
     border-radius: 4px;
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.res-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
 .res-item.energy-main {
-    background: rgba(255, 183, 3, 0.1);
-    border-color: rgba(255, 183, 3, 0.4);
-    box-shadow: 0 0 10px rgba(255, 183, 3, 0.15);
+    background: linear-gradient(135deg, rgba(255, 183, 3, 0.16), rgba(255, 110, 0, 0.08));
+    border-color: rgba(255, 183, 3, 0.55);
+    box-shadow: 0 0 14px rgba(255, 183, 3, 0.18);
+    padding: 4px 11px;
+}
+
+.res-stack {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+.res-label {
+    font-size: 8px;
+    color: #ffd166;
+    letter-spacing: 0.8px;
+    font-weight: 700;
 }
 
 .res-icon {
-    font-size: 14px;
+    font-size: 16px;
+    filter: drop-shadow(0 0 6px var(--c-energy));
 }
 
 .res-val {
-    font-weight: bold;
+    font-weight: 700;
     color: #fff;
+}
+
+.res-rate {
+    font-size: 9.5px;
+    color: var(--c-plasma);
+    opacity: 0.9;
 }
 
 /* メインゲームグリッド (3カラム構成) */
 .game-container {
+    position: relative;
+    z-index: 5;
     flex: 1;
     display: grid;
-    grid-template-columns: 340px 1fr 380px;
+    grid-template-columns: 355px 1fr 405px;
     overflow: hidden;
     gap: 1px;
     background-color: var(--border-color);
@@ -148,30 +368,41 @@ body {
 
 /* カラム共通スタイル */
 .game-column {
-    background-color: var(--bg-dark);
+    background: rgba(6, 11, 21, 0.88);
+    backdrop-filter: blur(8px);
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
 
+.center-reactor-column {
+    background: radial-gradient(circle at 50% 35%, rgba(13, 28, 56, 0.55) 0%, rgba(5, 9, 18, 0.95) 85%);
+}
+
 .column-header {
-    background-color: var(--bg-panel);
-    padding: 10px 14px;
+    background: linear-gradient(90deg, rgba(13, 23, 44, 0.95), rgba(10, 18, 34, 0.9));
+    padding: 9px 14px;
     border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-height: 44px;
 }
 
 .column-title {
-    font-size: 13px;
+    font-family: var(--font-display);
+    font-size: 11.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     color: var(--text-primary);
+}
+
+.col-icon {
+    font-size: 14px;
 }
 
 .column-body {
@@ -180,7 +411,7 @@ body {
     padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 11px;
 }
 
 /* スクロールバー装飾 */
@@ -189,12 +420,19 @@ body {
     height: 6px;
 }
 ::-webkit-scrollbar-track {
-    background: var(--bg-dark);
+    background: rgba(5, 9, 18, 0.8);
 }
 ::-webkit-scrollbar-thumb {
-    background: #1e3352;
+    background: #1e375a;
     border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
     background: #3a86ff;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 1200px) {
+    .game-container {
+        grid-template-columns: 310px 1fr 340px;
+    }
 }

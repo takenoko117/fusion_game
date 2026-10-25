@@ -1,17 +1,16 @@
 /**
- * animations.css
- * アニメーション、発光エフェクト、トランジション
+ * animations.css (v2.0 Keyframe Animations & Reactive Effects)
  */
 
 @keyframes pulseGlow {
     0% { box-shadow: 0 0 5px rgba(0, 245, 212, 0.2); }
-    50% { box-shadow: 0 0 16px rgba(0, 245, 212, 0.6); }
+    50% { box-shadow: 0 0 18px rgba(0, 245, 212, 0.65); }
     100% { box-shadow: 0 0 5px rgba(0, 245, 212, 0.2); }
 }
 
 @keyframes energySurge {
     0% { transform: scale(1); filter: brightness(1); }
-    50% { transform: scale(1.05); filter: brightness(1.4); }
+    50% { transform: scale(1.04); filter: brightness(1.4); }
     100% { transform: scale(1); filter: brightness(1); }
 }
 
@@ -20,25 +19,36 @@
     to { transform: rotate(360deg); }
 }
 
+@keyframes statusBlink {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.88); }
+}
+
 .anim-pulse {
-    animation: pulseGlow 2s infinite ease-in-out;
+    animation: pulseGlow 2.2s infinite ease-in-out;
 }
 
 .anim-surge {
     animation: energySurge 0.3s ease-out;
 }
 
+.status-dot.is-active {
+    animation: statusBlink 1.5s infinite ease-in-out;
+}
+
 .toast-notification {
     position: fixed;
     bottom: 24px;
     right: 24px;
-    background: rgba(13, 21, 34, 0.95);
+    background: rgba(9, 16, 30, 0.96);
+    backdrop-filter: blur(12px);
     border: 1px solid var(--c-plasma);
-    box-shadow: 0 0 20px rgba(0, 245, 212, 0.3);
-    border-radius: 6px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.7), 0 0 22px rgba(0, 245, 212, 0.35);
+    border-radius: 8px;
     padding: 12px 18px;
     color: #fff;
     font-size: 13px;
+    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 12px;
